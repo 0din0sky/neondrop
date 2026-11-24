@@ -134,6 +134,13 @@
         /* Hide Horizontal Scrollbars */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Toast Animation */
+        @keyframes toastIn {
+            from { transform: translateY(100%) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .toast-animate { animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 </head>
 <body class="min-h-screen bg-[#050806] text-gray-200 antialiased selection:bg-[#00ff66] selection:text-black">
@@ -187,7 +194,7 @@
                         <div class="text-center space-y-1">
                             <i class="fa-brands fa-steam text-3xl text-gray-400"></i>
                             <h4 class="text-xs font-bold text-white uppercase tracking-wider">Авторизация Steam</h4>
-                            <p class="text-[10px] text-gray-400">Войдите через официальный шлюз Steam OpenID для синхронизации инвентаря</p>
+                            <p class="text-[10px] text-gray-400">Войдите через официальный шлюз Steam OpenID для синхронизации аккаунта</p>
                         </div>
                         <button onclick="loginWithSteam()" class="w-full py-2.5 px-3 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#00ff66] to-emerald-400 hover:from-emerald-400 hover:to-[#00ff66] transition-all glow-green flex items-center justify-center space-x-2 shadow-lg">
                             <i class="fa-brands fa-steam text-base"></i>
@@ -199,16 +206,25 @@
                     <div id="sidebarLoggedIn" class="hidden space-y-3">
                         <div class="flex items-center space-x-3">
                             <div class="relative cursor-pointer" onclick="openProfileModal()">
-                                <img id="userAvatar" src="https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg" class="w-11 h-11 rounded-xl border-2 border-[#00ff66] object-cover shadow-md" alt="Avatar">
-                                <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#00ff66] border-2 border-[#080d0a] rounded-full"></span>
+                                <img id="userAvatar" src="https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg" class="w-11 h-11 rounded-xl border-2 border-[#00ff66] object-cover shadow-md" alt="Steam Avatar" onerror="this.src='https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg'">
+                                <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#00ff66] border-2 border-[#080d0a] rounded-full" title="Steam Онлайн"></span>
                             </div>
                             <div class="overflow-hidden flex-1">
-                                <span id="userName" class="text-xs font-black text-white block truncate">Player</span>
+                                <span id="userName" class="text-xs font-black text-white block truncate">Steam User</span>
                                 <span id="userSteamID" class="text-[9px] text-gray-400 font-mono block truncate">ID: 76561198...</span>
                             </div>
-                            <button onclick="openProfileModal()" class="text-gray-400 hover:text-[#00ff66] p-1 text-xs" title="Настройки профиля">
+                            <button onclick="openProfileModal()" class="text-gray-400 hover:text-[#00ff66] p-1.5 rounded-lg hover:bg-white/5 transition-all text-xs" title="Трейд-ссылка и Steam Профиль">
                                 <i class="fa-solid fa-gear"></i>
                             </button>
+                        </div>
+
+                        <!-- Trade Link Warning Banner if not set -->
+                        <div id="tradeLinkNotice" class="hidden bg-amber-500/10 border border-amber-500/30 p-2 rounded-xl flex items-center justify-between text-[10px] text-amber-300">
+                            <span class="flex items-center space-x-1.5 font-medium truncate">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-400 shrink-0"></i>
+                                <span class="truncate">Укажите Трейд-ссылку</span>
+                            </span>
+                            <button onclick="openProfileModal()" class="text-[#00ff66] hover:underline font-bold shrink-0 ml-1">Настроить</button>
                         </div>
 
                         <!-- Balance & Top Up -->
@@ -238,7 +254,7 @@
                         </div>
 
                         <button onclick="logoutSteam()" class="w-full text-center text-[10px] text-gray-500 hover:text-red-400 pt-1 transition-colors">
-                            <i class="fa-solid fa-right-from-bracket mr-1"></i> Выйти из аккаунта
+                            <i class="fa-solid fa-right-from-bracket mr-1"></i> Выйти из Steam
                         </button>
                     </div>
 
@@ -274,9 +290,9 @@
             <div class="p-5 border-t border-[#1a2920] hidden lg:block text-[10px] text-gray-500 space-y-1 font-mono">
                 <div class="flex items-center space-x-1 text-[#00ff66]">
                     <span class="w-1.5 h-1.5 rounded-full bg-[#00ff66] animate-ping"></span>
-                    <span>Provably Fair CS2 System</span>
+                    <span>Steam OpenID Synchronized</span>
                 </div>
-                <p>© 2026 NeonDrop Engine v3.2</p>
+                <p>© 2026 NeonDrop Engine v3.5</p>
             </div>
 
         </aside>
@@ -326,7 +342,7 @@
                                 <span class="text-neon-gradient">С ЧЕСТНЫМ ШАНСОМ PROVABLY FAIR</span>
                             </h1>
                             <p class="text-xs text-gray-400">
-                                Оригинальные скины Counter-Strike 2. Моментальный вывод на ваш аккаунт Steam или обмен в Неоновом Апгрейдере!
+                                Оригинальные скины Counter-Strike 2. Моментальный вывод через Steam Trade URL на ваш инвентарь или обмен в Неоновом Апгрейдере!
                             </p>
                         </div>
                         <div class="z-10 mt-4 md:mt-0 flex items-center justify-center">
@@ -369,11 +385,15 @@
                             <span class="text-xs text-[#00ff66] uppercase font-bold tracking-widest block">ПОЗДРАВЛЯЕМ! ВАШ ВЫИГРЫШ:</span>
                             <h3 id="wonItemName" class="text-xl font-black text-white">AK-47 | Inheritance</h3>
                             <p id="wonItemPrice" class="text-sm font-bold font-mono text-[#00ff66]">$145.00</p>
-                            <div class="flex items-center justify-center space-x-3 pt-2">
-                                <button onclick="sellWonItem()" class="px-5 py-2 rounded-lg bg-[#00ff66]/20 hover:bg-[#00ff66]/30 text-[#00ff66] border border-[#00ff66]/40 font-bold text-xs transition-all">
+                            <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+                                <button onclick="withdrawWonItemDirectly()" class="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs transition-all shadow-md flex items-center space-x-1.5">
+                                    <i class="fa-brands fa-steam"></i>
+                                    <span>Вывести в Steam</span>
+                                </button>
+                                <button onclick="sellWonItem()" class="px-4 py-2 rounded-lg bg-[#00ff66]/20 hover:bg-[#00ff66]/30 text-[#00ff66] border border-[#00ff66]/40 font-bold text-xs transition-all">
                                     Продать за <span id="sellPriceText">$145.00</span>
                                 </button>
-                                <button onclick="keepWonItem()" class="px-5 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all">
+                                <button onclick="keepWonItem()" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all">
                                     В инвентарь
                                 </button>
                             </div>
@@ -553,7 +573,7 @@
                             <thead class="bg-[#050806] text-gray-400 text-[10px] sm:text-xs uppercase font-mono border-b border-[#1a2920]">
                                 <tr>
                                     <th class="py-4 px-4 sm:px-6">Место</th>
-                                    <th class="py-4 px-4 sm:px-6">Игрок</th>
+                                    <th class="py-4 px-4 sm:px-6">Игрок Steam</th>
                                     <th class="py-4 px-4 sm:px-6">🔑 Кейсов</th>
                                     <th class="py-4 px-4 sm:px-6">📈 Апгрейдов</th>
                                     <th class="py-4 px-4 sm:px-6">Лучший скин</th>
@@ -571,7 +591,7 @@
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#1a2920] pb-4 gap-3">
                         <div>
                             <h2 class="text-2xl font-black text-white">Ваш Инвентарь</h2>
-                            <p class="text-xs text-gray-400">Скины, полученные из кейсов и апгрейдов</p>
+                            <p class="text-xs text-gray-400">Скины, полученные из кейсов и апгрейдов. Можете вывести в Steam или продать</p>
                         </div>
                         <div class="flex items-center space-x-3">
                             <button onclick="sellAllInventory()" class="px-4 py-2 rounded-xl bg-[#00ff66]/20 hover:bg-[#00ff66]/30 text-[#00ff66] border border-[#00ff66]/40 font-extrabold text-xs transition-all">
@@ -591,7 +611,7 @@
 
     </div>
 
-    <!-- ==================== MODAL 1: STEAM LOGIN / PROFILE SETTINGS ==================== -->
+    <!-- ==================== MODAL 1: STEAM PROFILE & TRADE URL SETTINGS ==================== -->
     <div id="profileModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-[#080d0a] border border-[#00ff66]/40 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl relative">
             <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
@@ -600,28 +620,54 @@
 
             <div class="text-center space-y-1">
                 <i class="fa-brands fa-steam text-4xl text-[#00ff66]"></i>
-                <h3 class="text-xl font-black text-white">Профиль игрока Steam</h3>
-                <p class="text-xs text-gray-400">Настройки аккаунта и обменные данные</p>
+                <h3 class="text-xl font-black text-white">Профиль Steam & Трейд-Ссылка</h3>
+                <p class="text-xs text-gray-400">Данные аккаунта синхронизированы через Steam OpenID</p>
             </div>
 
-            <div class="space-y-3 text-xs">
-                <div>
-                    <label class="block text-gray-400 mb-1">Никнейм:</label>
-                    <input type="text" id="settingUserName" class="w-full bg-[#050806] border border-[#1a2920] rounded-xl px-3 py-2 text-white font-bold focus:border-[#00ff66] outline-none">
+            <!-- READONLY STEAM USER INFO -->
+            <div class="bg-[#050806] border border-[#1a2920] p-3 rounded-xl flex items-center space-x-3">
+                <img id="modalUserAvatar" src="https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg" class="w-12 h-12 rounded-xl border border-[#00ff66] object-cover shrink-0" alt="Avatar">
+                <div class="overflow-hidden flex-1">
+                    <span id="modalUserName" class="text-sm font-black text-white block truncate">Steam User</span>
+                    <a id="modalSteamLink" href="#" target="_blank" class="text-[10px] text-gray-400 hover:text-[#00ff66] font-mono block truncate">
+                        SteamID: <span id="modalSteamID">76561198...</span> <i class="fa-solid fa-arrow-up-right-from-square text-[8px] ml-0.5"></i>
+                    </a>
                 </div>
-                <div>
-                    <label class="block text-gray-400 mb-1">SteamID64:</label>
-                    <input type="text" id="settingSteamID" readonly class="w-full bg-[#050806]/50 border border-[#1a2920] rounded-xl px-3 py-2 text-gray-400 font-mono">
+                <span class="px-2 py-1 bg-[#00ff66]/10 text-[#00ff66] border border-[#00ff66]/30 text-[9px] rounded font-bold uppercase shrink-0">Steam Verified</span>
+            </div>
+
+            <!-- TRADE URL SECTION -->
+            <div class="space-y-2 text-xs">
+                <div class="flex items-center justify-between">
+                    <label class="font-bold text-white flex items-center space-x-1.5">
+                        <i class="fa-solid fa-link text-[#00ff66]"></i>
+                        <span>Ваша Трейд-ссылка Steam:</span>
+                    </label>
+                    <span id="tradeUrlStatusBadge" class="text-[9px] px-2 py-0.5 rounded font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                        Не указана
+                    </span>
                 </div>
-                <div>
-                    <label class="block text-gray-400 mb-1">URL Аватарки:</label>
-                    <input type="text" id="settingAvatarURL" class="w-full bg-[#050806] border border-[#1a2920] rounded-xl px-3 py-2 text-white font-mono text-[10px] focus:border-[#00ff66] outline-none">
+
+                <div class="relative">
+                    <input type="url" id="settingTradeUrl" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=...&token=..." class="w-full bg-[#050806] border border-[#1a2920] focus:border-[#00ff66] rounded-xl px-3 py-2.5 text-white font-mono text-[11px] outline-none transition-all pr-8" oninput="validateTradeUrlInput()">
+                    <i id="tradeUrlValidIcon" class="fa-solid fa-check text-[#00ff66] absolute right-3 top-3 hidden"></i>
+                </div>
+
+                <div class="flex items-center justify-between text-[10px] pt-1">
+                    <a href="https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url" target="_blank" class="text-[#00ff66] hover:underline flex items-center space-x-1 font-semibold">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>Где взять трейд-ссылку в Steam?</span>
+                    </a>
+                    <span class="text-gray-500 font-mono">100% Безопасно</span>
                 </div>
             </div>
 
-            <button onclick="saveProfileSettings()" class="w-full py-2.5 rounded-xl font-black text-xs text-black bg-[#00ff66] hover:bg-emerald-300 transition-all glow-green">
-                Сохранить изменения
-            </button>
+            <div class="pt-2">
+                <button onclick="saveTradeUrlSettings()" class="w-full py-2.5 rounded-xl font-black text-xs text-black bg-[#00ff66] hover:bg-emerald-300 transition-all glow-green flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Сохранить Трейд-ссылку</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -634,13 +680,13 @@
 
             <div class="text-center space-y-1">
                 <h3 class="text-2xl font-black text-white">ПОПОЛНЕНИЕ БАЛАНСА</h3>
-                <p class="text-xs text-gray-400">Выберите способ пополнения для вашего аккаунта</p>
+                <p class="text-xs text-gray-400">Выберите способ пополнения для вашего Steam аккаунта</p>
             </div>
 
             <!-- Dev Fast Test Topup -->
             <div class="bg-[#00ff66]/10 border border-[#00ff66]/30 p-3 rounded-xl text-center space-y-2">
                 <span class="text-[11px] font-bold text-[#00ff66] uppercase tracking-wider block">
-                    <i class="fa-solid fa-vial mr-1"></i> Тестовый начислитель (Dev Mode)
+                    <i class="fa-solid fa-vial mr-1"></i> Быстрое тестирование (Dev Mode)
                 </span>
                 <div class="flex justify-center space-x-2">
                     <button onclick="addTestBalance(10)" class="px-3 py-1.5 rounded-lg bg-[#00ff66] text-black font-extrabold text-xs hover:bg-emerald-300 transition-all">+$10.00</button>
@@ -711,6 +757,9 @@
         </div>
     </div>
 
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
 
     <!-- ==================== APPLICATION SCRIPT & LOGIC ==================== -->
     <script>
@@ -769,6 +818,30 @@
         }
         const sfx = new SoundFX();
 
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl border text-xs font-bold shadow-2xl flex items-center space-x-2.5 toast-animate ${
+                type === 'success' ? 'bg-[#080d0a] border-[#00ff66] text-[#00ff66]' :
+                type === 'error' ? 'bg-[#080d0a] border-red-500 text-red-400' :
+                'bg-[#080d0a] border-[#1a2920] text-white'
+            }`;
+
+            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check text-base"></i>' :
+                         type === 'error' ? '<i class="fa-solid fa-triangle-exclamation text-base"></i>' :
+                         '<i class="fa-solid fa-circle-info text-base"></i>';
+
+            toast.innerHTML = `${icon}<span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
         // Authentic CS2 Skins Database
         const CS2_SKINS = [
             { id: 'b_gamma', name: 'Butterfly Knife | Gamma Doppler', wear: 'Factory New', price: 1850.00, rarity: 'gold', color: '#00ff66', type: 'Knife' },
@@ -797,12 +870,16 @@
             { id: 'chroma2', name: 'Chroma 2 Case', price: 2.80, items: ['k_ruby', 'ak_fire', 'usp_kill', 'deagle_print'] }
         ];
 
-        // Active State
+        // Default Fallback Avatar
+        const DEFAULT_STEAM_AVATAR = 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg';
+
+        // Active User State (Pipelined strictly from Steam)
         let currentUser = {
             loggedIn: false,
             steamId: '',
-            name: 'Gamer_CS2',
-            avatar: 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg',
+            name: 'Steam Gamer',
+            avatar: DEFAULT_STEAM_AVATAR,
+            tradeUrl: '',
             balance: 0.00,
             casesOpened: 0,
             upgradesWon: 0,
@@ -834,7 +911,7 @@
             updateUpgraderUI();
         };
 
-        // 2. REAL STEAM OPENID 2.0 LOGIN LOGIC
+        // STEAM OPENID LOGIN & PROFILE SYNCHRONIZATION
         function loginWithSteam() {
             const currentOrigin = window.location.origin;
             const currentPath = window.location.pathname;
@@ -861,47 +938,65 @@
                 if (match && match[1]) {
                     const steamId64 = match[1];
                     
-                    // Set active session
+                    // Activate user session
                     currentUser.loggedIn = true;
                     currentUser.steamId = steamId64;
-                    currentUser.name = 'SteamPlayer_' + steamId64.substring(12);
-                    currentUser.avatar = 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg';
+                    currentUser.name = 'Steam_' + steamId64.substring(12);
+                    currentUser.avatar = DEFAULT_STEAM_AVATAR;
 
                     // Save session key
                     localStorage.setItem('neondrop_active_steamid', steamId64);
 
-                    // Fetch user profile name/avatar using public Steam CORS XML proxy if available
-                    fetchSteamProfileData(steamId64);
-
                     // Clean URL bar query string without reloading page
                     window.history.replaceState({}, document.title, window.location.pathname);
+
+                    // Fetch real Steam profile XML data using resilient CORS proxies
+                    fetchSteamProfileData(steamId64);
                 }
             }
         }
 
-        function fetchSteamProfileData(steamId64) {
-            // Attempt to load steam profile XML via AllOrigins CORS Proxy
+        // Resilient multi-proxy Steam XML fetching
+        async function fetchSteamProfileData(steamId64) {
             const xmlUrl = `https://steamcommunity.com/profiles/${steamId64}/?xml=1`;
-            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(xmlUrl)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.contents) {
+            
+            const proxies = [
+                (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+            ];
+
+            let fetchedName = null;
+            let fetchedAvatar = null;
+
+            for (const getProxyUrl of proxies) {
+                try {
+                    const res = await fetch(getProxyUrl(xmlUrl));
+                    if (!res.ok) continue;
+                    const text = await res.text();
+                    
+                    if (text && text.includes('<steamID>')) {
                         const parser = new DOMParser();
-                        const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+                        const xmlDoc = parser.parseFromString(text, "text/xml");
                         const steamIDName = xmlDoc.getElementsByTagName("steamID")[0]?.textContent;
-                        const avatarIcon = xmlDoc.getElementsByTagName("avatarFull")[0]?.textContent;
+                        const avatarFull = xmlDoc.getElementsByTagName("avatarFull")[0]?.textContent || xmlDoc.getElementsByTagName("avatarMedium")[0]?.textContent;
 
-                        if (steamIDName) currentUser.name = steamIDName;
-                        if (avatarIcon) currentUser.avatar = avatarIcon;
+                        if (steamIDName) fetchedName = steamIDName.trim();
+                        if (avatarFull) fetchedAvatar = avatarFull.trim();
 
-                        saveUserSession();
-                        updateUserUI();
+                        if (fetchedName || fetchedAvatar) break; // Successfully parsed!
                     }
-                })
-                .catch(() => {
-                    saveUserSession();
-                    updateUserUI();
-                });
+                } catch (err) {
+                    console.warn('Proxy fetch attempt failed, trying next fallback...', err);
+                }
+            }
+
+            if (fetchedName) currentUser.name = fetchedName;
+            if (fetchedAvatar) currentUser.avatar = fetchedAvatar;
+
+            saveUserSession();
+            updateUserUI();
+            showToast(`Синхронизировано с Steam: ${currentUser.name}`, 'success');
         }
 
         function loadUserSession() {
@@ -910,15 +1005,18 @@
                 const rawData = localStorage.getItem(`neondrop_user_${activeSteamId}`);
                 if (rawData) {
                     try {
-                        currentUser = JSON.parse(rawData);
-                        currentUser.loggedIn = true;
+                        const parsed = JSON.parse(rawData);
+                        currentUser = { ...currentUser, ...parsed, loggedIn: true };
                     } catch(e) {
                         console.error('Session load error', e);
                     }
                 } else {
-                    // First time login defaults: $0.00, 0 cases, 0 upgrades
+                    // First time Steam login defaults
                     currentUser.loggedIn = true;
                     currentUser.steamId = activeSteamId;
+                    currentUser.name = 'Steam_' + activeSteamId.substring(12);
+                    currentUser.avatar = DEFAULT_STEAM_AVATAR;
+                    currentUser.tradeUrl = '';
                     currentUser.balance = 0.00;
                     currentUser.casesOpened = 0;
                     currentUser.upgradesWon = 0;
@@ -938,6 +1036,7 @@
             currentUser.loggedIn = false;
             localStorage.removeItem('neondrop_active_steamid');
             updateUserUI();
+            showToast('Вы вышли из Steam', 'info');
         }
 
         function updateUserUI() {
@@ -951,11 +1050,119 @@
                 document.getElementById('userBalance').innerText = `$${currentUser.balance.toFixed(2)}`;
                 document.getElementById('statCasesOpened').innerText = currentUser.casesOpened;
                 document.getElementById('statUpgradesWon').innerText = currentUser.upgradesWon;
+
+                // Trade URL status banner in sidebar
+                if (isValidTradeUrl(currentUser.tradeUrl)) {
+                    document.getElementById('tradeLinkNotice').classList.add('hidden');
+                } else {
+                    document.getElementById('tradeLinkNotice').classList.remove('hidden');
+                }
             } else {
                 document.getElementById('sidebarLoggedIn').classList.add('hidden');
                 document.getElementById('sidebarLoggedOut').classList.remove('hidden');
             }
             renderLeaderboard();
+        }
+
+        // STEAM TRADE URL VALIDATION & MANAGEMENT
+        function isValidTradeUrl(url) {
+            if (!url) return false;
+            return /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/\?partner=\d+&token=[\w-]+$/i.test(url.trim());
+        }
+
+        function validateTradeUrlInput() {
+            const val = document.getElementById('settingTradeUrl').value.trim();
+            const badge = document.getElementById('tradeUrlStatusBadge');
+            const icon = document.getElementById('tradeUrlValidIcon');
+
+            if (!val) {
+                badge.innerText = 'Не указана';
+                badge.className = 'text-[9px] px-2 py-0.5 rounded font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30';
+                icon.classList.add('hidden');
+            } else if (isValidTradeUrl(val)) {
+                badge.innerText = 'Сохранена ✓';
+                badge.className = 'text-[9px] px-2 py-0.5 rounded font-bold bg-[#00ff66]/10 text-[#00ff66] border border-[#00ff66]/30';
+                icon.classList.remove('hidden');
+            } else {
+                badge.innerText = 'Неверный формат';
+                badge.className = 'text-[9px] px-2 py-0.5 rounded font-bold bg-red-500/10 text-red-400 border border-red-500/30';
+                icon.classList.add('hidden');
+            }
+        }
+
+        function openProfileModal() {
+            if (!currentUser.loggedIn) {
+                loginWithSteam();
+                return;
+            }
+
+            document.getElementById('modalUserName').innerText = currentUser.name;
+            document.getElementById('modalSteamID').innerText = currentUser.steamId;
+            document.getElementById('modalUserAvatar').src = currentUser.avatar;
+            document.getElementById('modalSteamLink').href = `https://steamcommunity.com/profiles/${currentUser.steamId}`;
+            
+            document.getElementById('settingTradeUrl').value = currentUser.tradeUrl || '';
+            validateTradeUrlInput();
+
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function saveTradeUrlSettings() {
+            const val = document.getElementById('settingTradeUrl').value.trim();
+            if (val && !isValidTradeUrl(val)) {
+                showToast('Неверный формат трейд-ссылки Steam!', 'error');
+                return;
+            }
+
+            currentUser.tradeUrl = val;
+            saveUserSession();
+            updateUserUI();
+            closeProfileModal();
+
+            if (val) {
+                showToast('Трейд-ссылка Steam успешно сохранена!', 'success');
+            } else {
+                showToast('Трейд-ссылка удалена', 'info');
+            }
+        }
+
+        // WITHDRAWAL LOGIC (ВЫВОД В STEAM)
+        function withdrawWonItemDirectly() {
+            if (!wonItemCandidate) return;
+            attemptWithdrawSkin(wonItemCandidate, true);
+        }
+
+        function attemptWithdrawSkin(skin, isDirectWon = false) {
+            if (!currentUser.loggedIn) {
+                showToast('Войдите через Steam для вывода!', 'error');
+                loginWithSteam();
+                return;
+            }
+
+            if (!isValidTradeUrl(currentUser.tradeUrl)) {
+                showToast('Для вывода укажите вашу Steam Трейд-ссылку!', 'error');
+                openProfileModal();
+                return;
+            }
+
+            // Extract partner ID from trade URL
+            const partnerMatch = currentUser.tradeUrl.match(/partner=(\d+)/);
+            const partnerId = partnerMatch ? partnerMatch[1] : 'Partner';
+
+            if (isDirectWon) {
+                document.getElementById('dropResultBox').classList.add('hidden');
+            } else {
+                // Remove from inventory
+                currentUser.inventory = currentUser.inventory.filter(i => i.instanceId !== skin.instanceId);
+                saveUserSession();
+                renderInventory();
+            }
+
+            showToast(`Запрос на обмен отправлен! Предмет "${skin.name}" отправлен партнёру #${partnerId}`, 'success');
         }
 
         // NAVIGATION TABS
@@ -1046,17 +1253,17 @@
         function spinRoulette() {
             if (isSpinning) return;
             if (!currentUser.loggedIn) {
-                alert('Пожалуйста, войдите через Steam для открытия кейса!');
+                showToast('Пожалуйста, войдите через Steam для открытия кейса!', 'error');
                 loginWithSteam();
                 return;
             }
             if (currentUser.balance < activeCase.price) {
-                alert('Недостаточно средств на балансе! Пополните счёт через "+ Депозит".');
+                showToast('Недостаточно средств на балансе! Пополните счёт через "+ Депозит".', 'error');
                 openDepositModal();
                 return;
             }
 
-            // Deduct balance & INCREMENT 🔑 TOTAL CASES OPENED by 1
+            // Deduct balance & increment cases opened by 1
             currentUser.balance -= activeCase.price;
             currentUser.casesOpened += 1;
             saveUserSession();
@@ -1103,6 +1310,7 @@
             saveUserSession();
             updateUserUI();
             document.getElementById('dropResultBox').classList.add('hidden');
+            showToast(`Скин продан за $${val.toFixed(2)}`, 'success');
         }
 
         function keepWonItem() {
@@ -1111,6 +1319,7 @@
             updateUserUI();
             renderInventory();
             document.getElementById('dropResultBox').classList.add('hidden');
+            showToast('Предмет добавлен в инвентарь', 'info');
         }
 
         // UPGRADED FEATURE LOGIC
@@ -1208,16 +1417,16 @@
 
         function runUpgrade() {
             if (!currentUser.loggedIn) {
-                alert('Пожалуйста, войдите через Steam!');
+                showToast('Пожалуйста, войдите через Steam!', 'error');
                 loginWithSteam();
                 return;
             }
 
             if (upgraderMode === 'item') {
-                if (!selectedUpgInputItem) { alert('Выберите предмет для апгрейда!'); return; }
+                if (!selectedUpgInputItem) { showToast('Выберите предмет для апгрейда!', 'error'); return; }
             } else {
                 const betVal = parseFloat(document.getElementById('upgBetAmount').value) || 0;
-                if (currentUser.balance < betVal) { alert('Недостаточно средств!'); openDepositModal(); return; }
+                if (currentUser.balance < betVal) { showToast('Недостаточно средств!', 'error'); openDepositModal(); return; }
                 currentUser.balance -= betVal;
             }
 
@@ -1237,13 +1446,13 @@
 
                 if (isWin) {
                     sfx.win();
-                    currentUser.upgradesWon += 1; // INCREMENT SUCCESSFUL UPGRADES COUNTER
+                    currentUser.upgradesWon += 1;
                     currentUser.inventory.push({ ...selectedUpgTargetItem, instanceId: Date.now() });
                     pushLiveDropChip(selectedUpgTargetItem, currentUser.name, true);
-                    alert(`УСПЕХ! Вы выиграли ${selectedUpgTargetItem.name}!`);
+                    showToast(`УСПЕХ! Вы выиграли ${selectedUpgTargetItem.name}!`, 'success');
                 } else {
                     sfx.fail();
-                    alert('Апгрейд не удался!');
+                    showToast('Апгрейд не удался!', 'error');
                 }
 
                 if (upgraderMode === 'item' && selectedUpgInputItem) {
@@ -1265,7 +1474,6 @@
                 pushLiveDropChip(randomSkin, `User_${Math.floor(Math.random()*9000+1000)}`, false);
             }
 
-            // Dynamic Live Drop ticker loop
             setInterval(() => {
                 const randomSkin = CS2_SKINS[Math.floor(Math.random() * CS2_SKINS.length)];
                 pushLiveDropChip(randomSkin, `Player_${Math.floor(Math.random()*9000+1000)}`, false);
@@ -1360,30 +1568,46 @@
                 <div class="bg-[#080d0a] border border-[#1a2920] p-3 rounded-xl text-center space-y-2 relative rarity-${item.rarity}">
                     <span class="text-[9px] font-mono text-[#00ff66] block font-bold">$${item.price.toFixed(2)}</span>
                     <h5 class="text-xs font-bold text-white truncate">${item.name}</h5>
-                    <button onclick="sellInventoryItem(${item.instanceId})" class="w-full py-1 rounded bg-white/5 hover:bg-[#00ff66]/20 text-gray-300 hover:text-[#00ff66] font-bold text-[10px] transition-all">Продать</button>
+                    <div class="flex flex-col gap-1 pt-1">
+                        <button onclick="attemptWithdrawSkinByInstance(${item.instanceId})" class="w-full py-1 rounded bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-extrabold text-[10px] transition-all flex items-center justify-center space-x-1">
+                            <i class="fa-brands fa-steam"></i>
+                            <span>Вывести</span>
+                        </button>
+                        <button onclick="sellInventoryItem(${item.instanceId})" class="w-full py-1 rounded bg-white/5 hover:bg-[#00ff66]/20 text-gray-300 hover:text-[#00ff66] font-bold text-[10px] transition-all">
+                            Продать ($${(item.price*0.9).toFixed(2)})
+                        </button>
+                    </div>
                 </div>
             `).join('');
+        }
+
+        function attemptWithdrawSkinByInstance(instanceId) {
+            const item = currentUser.inventory.find(i => i.instanceId === instanceId);
+            if (item) attemptWithdrawSkin(item, false);
         }
 
         function sellInventoryItem(instanceId) {
             const item = currentUser.inventory.find(i => i.instanceId === instanceId);
             if (item) {
-                currentUser.balance += item.price;
+                const val = item.price * 0.9;
+                currentUser.balance += val;
                 currentUser.inventory = currentUser.inventory.filter(i => i.instanceId !== instanceId);
                 saveUserSession();
                 updateUserUI();
                 renderInventory();
+                showToast(`Предмет продан за $${val.toFixed(2)}`, 'success');
             }
         }
 
         function sellAllInventory() {
-            const total = currentUser.inventory.reduce((acc, i) => acc + i.price, 0);
+            if (currentUser.inventory.length === 0) return;
+            const total = currentUser.inventory.reduce((acc, i) => acc + i.price * 0.9, 0);
             currentUser.balance += total;
             currentUser.inventory = [];
             saveUserSession();
             updateUserUI();
             renderInventory();
-            alert(`Все скины успешно продан за $${total.toFixed(2)}`);
+            showToast(`Все скины успешно проданы за $${total.toFixed(2)}`, 'success');
         }
 
         // MODALS & DEPOSIT
@@ -1391,26 +1615,16 @@
         function closeDepositModal() { document.getElementById('depositModal').classList.add('hidden'); }
 
         function addTestBalance(amount) {
+            if (!currentUser.loggedIn) {
+                showToast('Сначала авторизуйтесь через Steam!', 'error');
+                loginWithSteam();
+                return;
+            }
             currentUser.balance += amount;
             saveUserSession();
             updateUserUI();
             closeDepositModal();
-        }
-
-        function openProfileModal() {
-            document.getElementById('settingUserName').value = currentUser.name;
-            document.getElementById('settingSteamID').value = currentUser.steamId || '76561198800000000';
-            document.getElementById('settingAvatarURL').value = currentUser.avatar;
-            document.getElementById('profileModal').classList.remove('hidden');
-        }
-        function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
-
-        function saveProfileSettings() {
-            currentUser.name = document.getElementById('settingUserName').value;
-            currentUser.avatar = document.getElementById('settingAvatarURL').value;
-            saveUserSession();
-            updateUserUI();
-            closeProfileModal();
+            showToast(`Баланс пополнен на +$${amount.toFixed(2)}`, 'success');
         }
 
         function claimPassReward(tier) {
@@ -1418,7 +1632,7 @@
             saveUserSession();
             updateUserUI();
             renderInventory();
-            alert('Награда Gamma Case зачислена в инвентарь!');
+            showToast('Награда Gamma Case зачислена в инвентарь!', 'success');
         }
     </script>
 </body>
