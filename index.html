@@ -1,1 +1,1306 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeonDrop — CS2 Case Opening & Upgrader</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        neon: {
+                            green: '#00ff66',
+                            magenta: '#ff00cc',
+                            purple: '#9d00ff',
+                            dark: '#0a0a0f',
+                            card: '#12121a',
+                            border: '#1f1f2e'
+                        },
+                        cs2: {
+                            milspec: '#4b69ff',
+                            restricted: '#8847ff',
+                            classified: '#d32ce6',
+                            covert: '#eb4b4b',
+                            gold: '#ffd700'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #07070a;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
 
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0f; }
+        ::-webkit-scrollbar-thumb { background: #1f1f2e; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff66; }
+
+        /* Neon Glow Utility Effects */
+        .glow-green {
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.35);
+        }
+        .glow-green-lg {
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.5);
+        }
+        .glow-magenta {
+            box-shadow: 0 0 15px rgba(255, 0, 204, 0.35);
+        }
+        .glow-magenta-lg {
+            box-shadow: 0 0 30px rgba(255, 0, 204, 0.5);
+        }
+        .text-neon-gradient {
+            background: linear-gradient(135deg, #00ff66 0%, #ff00cc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .border-neon-gradient {
+            border-image: linear-gradient(135deg, #00ff66, #ff00cc) 1;
+        }
+
+        /* CS2 Item Rare Gradients */
+        .bg-rarity-milspec { background: linear-gradient(180deg, rgba(75,105,255,0.05) 0%, rgba(75,105,255,0.2) 100%); border-bottom: 3px solid #4b69ff; }
+        .bg-rarity-restricted { background: linear-gradient(180deg, rgba(136,71,255,0.05) 0%, rgba(136,71,255,0.2) 100%); border-bottom: 3px solid #8847ff; }
+        .bg-rarity-classified { background: linear-gradient(180deg, rgba(211,44,230,0.05) 0%, rgba(211,44,230,0.2) 100%); border-bottom: 3px solid #d32ce6; }
+        .bg-rarity-covert { background: linear-gradient(180deg, rgba(235,75,75,0.05) 0%, rgba(235,75,75,0.25) 100%); border-bottom: 3px solid #eb4b4b; }
+        .bg-rarity-gold { background: linear-gradient(180deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.3) 100%); border-bottom: 3px solid #ffd700; }
+
+        /* Roulette Animation styles */
+        .roulette-container {
+            position: relative;
+            overflow: hidden;
+            background: #0a0a0f;
+            border: 2px solid #1f1f2e;
+            border-radius: 1rem;
+        }
+        .roulette-strip {
+            display: flex;
+            transition: transform 6s cubic-bezier(0.08, 0.8, 0.15, 1);
+            will-change: transform;
+        }
+        .roulette-marker {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #00ff66;
+            transform: translateX(-50%);
+            z-index: 20;
+            box-shadow: 0 0 12px #00ff66, 0 0 24px #00ff66;
+        }
+        .roulette-marker::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -6px;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 10px solid #00ff66;
+        }
+        .roulette-marker::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -6px;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 10px solid #00ff66;
+        }
+
+        /* Upgrader Gauge Ring */
+        .upgrade-ring-bg {
+            stroke: #1b1b26;
+        }
+        .upgrade-ring-win {
+            stroke: #00ff66;
+            transition: stroke-dasharray 0.3s ease, stroke-dashoffset 0.3s ease;
+            filter: drop-shadow(0px 0px 8px rgba(0, 255, 102, 0.8));
+        }
+
+        /* Pulse Animations */
+        @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 0.9; }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#07070a] text-gray-200 antialiased selection:bg-neon-green selection:text-black">
+
+    <!-- Top Live Drop Feed Banner -->
+    <div class="w-full bg-[#0c0c12] border-b border-[#1f1f2e] py-2 px-4 overflow-hidden">
+        <div class="max-w-7xl mx-auto flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-2 text-gray-400 font-medium">
+                <span class="inline-block w-2 h-2 rounded-full bg-neon-green animate-ping"></span>
+                <span class="text-white font-bold tracking-wider uppercase">LIVE DROPS:</span>
+            </div>
+            <div id="liveFeed" class="flex items-center space-x-3 overflow-x-auto no-scrollbar py-1">
+                <!-- Dynamically populated live drop chips -->
+            </div>
+            <div class="hidden md:flex items-center space-x-4 text-gray-400 font-mono text-[11px]">
+                <span><i class="fa-solid fa-users text-neon-green mr-1"></i> Онлайн: <strong class="text-white">1,482</strong></span>
+                <span><i class="fa-solid fa-[#00ff66] mr-1"></i> Игроков: <strong class="text-white">342,910</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header / Navigation Header -->
+    <header class="sticky top-0 z-40 bg-[#0a0a0f]/90 backdrop-blur-md border-b border-[#1f1f2e]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Logo & Wireframe Sketch Frame -->
+            <div class="flex items-center space-x-8">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('cases')">
+                    <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-neon-magenta to-neon-green p-[2px] shadow-lg glow-green">
+                        <div class="w-full h-full bg-[#0a0a0f] rounded-[10px] flex items-center justify-center">
+                            <i class="fa-solid fa-gem text-xl text-neon-green"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-1">
+                            <span class="text-2xl font-extrabold tracking-wider text-white">NEON</span>
+                            <span class="text-2xl font-extrabold tracking-wider text-neon-green">DROP</span>
+                        </div>
+                        <span class="text-[9px] uppercase tracking-widest text-neon-magenta font-mono block -mt-1">CS2 FAIR DROPS</span>
+                    </div>
+                </div>
+
+                <!-- Main Navigation Tabs -->
+                <nav class="hidden lg:flex items-center space-x-2">
+                    <button onclick="switchTab('cases')" id="nav-cases" class="nav-tab px-4 py-2.5 rounded-lg font-bold text-sm flex items-center space-x-2 transition-all duration-200 bg-neon-green/10 text-neon-green border border-neon-green/30">
+                        <i class="fa-solid fa-[#00ff66] fa-box-open"></i>
+                        <span>Кейсы</span>
+                    </button>
+                    <button onclick="switchTab('upgrader')" id="nav-upgrader" class="nav-tab px-4 py-2.5 rounded-lg font-bold text-sm flex items-center space-x-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-bolt text-neon-magenta"></i>
+                        <span>Апгрейдер</span>
+                    </button>
+                    <button onclick="switchTab('pass')" id="nav-pass" class="nav-tab px-4 py-2.5 rounded-lg font-bold text-sm flex items-center space-x-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-crown text-yellow-400"></i>
+                        <span>Pass</span>
+                    </button>
+                    <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="nav-tab px-4 py-2.5 rounded-lg font-bold text-sm flex items-center space-x-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-trophy text-amber-500"></i>
+                        <span>Топ</span>
+                    </button>
+                    <button onclick="openIntegrationModal()" class="px-3 py-2.5 rounded-lg font-medium text-xs text-gray-400 hover:text-neon-green bg-white/5 hover:bg-neon-green/10 transition-all border border-transparent hover:border-neon-green/30">
+                        <i class="fa-solid fa-plug text-neon-green mr-1.5"></i> Разработка / API
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Profile & Auth Header Section -->
+            <div id="profileHeaderArea" class="flex items-center space-x-3">
+                <!-- Logged Out State -->
+                <div id="authLoggedOut" class="flex items-center space-x-3">
+                    <button onclick="loginSteamDemo()" class="px-5 py-2.5 rounded-xl font-bold text-sm text-black bg-gradient-to-r from-neon-green to-emerald-400 hover:from-emerald-400 hover:to-neon-green transition-all transform active:scale-95 shadow-lg glow-green flex items-center space-x-2">
+                        <i class="fa-brands fa-steam text-lg"></i>
+                        <span>Войти через Steam</span>
+                    </button>
+                </div>
+
+                <!-- Logged In State (Initially Hidden or Shown after login) -->
+                <div id="authLoggedIn" class="hidden flex items-center space-x-4 bg-[#12121a] border border-[#1f1f2e] p-1.5 pl-4 rounded-xl">
+                    
+                    <!-- Stats Badges -->
+                    <div class="flex items-center space-x-3 border-r border-[#1f1f2e] pr-4">
+                        <!-- Key Icon = Total Cases Opened (NEVER DECREMENTS) -->
+                        <div class="flex items-center space-x-1.5" title="Всего открыто кейсов">
+                            <span class="text-lg">🔑</span>
+                            <div class="text-left">
+                                <span class="text-[10px] text-gray-400 uppercase block font-semibold leading-none">Открыто</span>
+                                <span id="statCasesOpened" class="text-sm font-extrabold font-mono text-white leading-tight">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Graph Icon = Successful Upgrades -->
+                        <div class="flex items-center space-x-1.5" title="Успешные апгрейды">
+                            <span class="text-lg">📈</span>
+                            <div class="text-left">
+                                <span class="text-[10px] text-gray-400 uppercase block font-semibold leading-none">Апгрейды</span>
+                                <span id="statUpgradesWon" class="text-sm font-extrabold font-mono text-neon-green leading-tight">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Balance & Deposit Button -->
+                    <div class="flex items-center space-x-2">
+                        <div class="text-right">
+                            <span class="text-[10px] text-gray-400 uppercase block font-semibold leading-none">Баланс</span>
+                            <span id="userBalance" class="text-base font-extrabold font-mono text-neon-green leading-tight">$0.00</span>
+                        </div>
+
+                        <button onclick="openDepositModal()" class="px-3.5 py-2 rounded-lg font-bold text-xs bg-gradient-to-r from-neon-magenta to-pink-600 hover:from-pink-600 hover:to-neon-magenta text-white shadow-md glow-magenta transition-all transform hover:scale-105 active:scale-95 flex items-center space-x-1.5">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Депозит</span>
+                        </button>
+                    </div>
+
+                    <!-- User Avatar & Dropdown -->
+                    <div class="flex items-center space-x-2 border-l border-[#1f1f2e] pl-3">
+                        <div class="relative cursor-pointer" onclick="switchTab('inventory')">
+                            <img id="userAvatar" src="https://placehold.co/100x100/12121a/00ff66?text=CS2" class="w-9 h-9 rounded-lg border border-neon-green/50 object-cover" alt="Avatar">
+                            <span class="absolute -bottom-1 -right-1 w-3 h-3 bg-neon-green border-2 border-[#0a0a0f] rounded-full"></span>
+                        </div>
+                        <div class="hidden sm:block text-left cursor-pointer" onclick="switchTab('inventory')">
+                            <span id="userName" class="text-xs font-bold text-white block truncate max-w-[90px]">Player</span>
+                            <span class="text-[9px] text-gray-400 block font-mono">Инвентарь &gt;</span>
+                        </div>
+                        <button onclick="logoutSteam()" class="text-gray-500 hover:text-red-400 px-1 py-1 text-xs" title="Выйти">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Mobile Navigation Row -->
+        <div class="lg:hidden flex items-center justify-around bg-[#07070a] border-t border-[#1f1f2e] py-2 px-2">
+            <button onclick="switchTab('cases')" id="mob-nav-cases" class="nav-tab px-3 py-1.5 rounded-lg text-xs font-bold text-neon-green bg-neon-green/10">Кейсы</button>
+            <button onclick="switchTab('upgrader')" id="mob-nav-upgrader" class="nav-tab px-3 py-1.5 rounded-lg text-xs font-bold text-gray-400">Апгрейдер</button>
+            <button onclick="switchTab('pass')" id="mob-nav-pass" class="nav-tab px-3 py-1.5 rounded-lg text-xs font-bold text-gray-400">Pass</button>
+            <button onclick="switchTab('leaderboard')" id="mob-nav-leaderboard" class="nav-tab px-3 py-1.5 rounded-lg text-xs font-bold text-gray-400">Топ</button>
+            <button onclick="switchTab('inventory')" id="mob-nav-inventory" class="nav-tab px-3 py-1.5 rounded-lg text-xs font-bold text-gray-400">Инвентарь</button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ==================== TAB 1: CASES (КЕЙСЫ) ==================== -->
+        <section id="tab-cases" class="space-y-8">
+            
+            <!-- Hero Banner / Featured Case -->
+            <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#12121a] via-[#1a1024] to-[#12121a] border border-[#1f1f2e] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between shadow-2xl">
+                <div class="absolute -right-10 -bottom-10 w-96 h-96 bg-neon-magenta/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-10 -top-10 w-96 h-96 bg-neon-green/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="z-10 max-w-xl text-center md:text-left space-y-3 mb-6 md:mb-0">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-xs font-bold uppercase tracking-widest">
+                        <i class="fa-solid fa-sparkles"></i>
+                        <span>Новый сезон CS2 Drop</span>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+                        ОТКРЫВАЙ КЕЙСЫ CS2 <br>
+                        <span class="text-neon-gradient">С ЧЕСТНЫМ ШАНСОМ X10</span>
+                    </h1>
+                    <p class="text-sm text-gray-400">
+                        Оригинальные скины из Counter-Strike 2. Моментальный вывод в инвентарь Steam или замена в Удобном Апгрейдере.
+                    </p>
+                    <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+                        <button onclick="scrollToCases()" class="px-6 py-3 rounded-xl font-extrabold text-sm text-black bg-neon-green hover:bg-emerald-300 transition-all glow-green flex items-center space-x-2">
+                            <span>Выбрать кейс</span>
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </button>
+                        <button onclick="openIntegrationModal()" class="px-5 py-3 rounded-xl font-bold text-sm text-gray-300 bg-white/5 hover:bg-white/10 border border-[#1f1f2e] transition-all flex items-center space-x-2">
+                            <i class="fa-solid fa-code text-neon-magenta"></i>
+                            <span>Как это работает?</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Banner Image Preview -->
+                <div class="z-10 relative flex items-center justify-center">
+                    <div class="w-48 h-48 sm:w-64 sm:h-64 relative flex items-center justify-center animate-pulse-slow">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-neon-green/20 to-neon-magenta/20 rounded-full blur-xl"></div>
+                        <img src="https://placehold.co/400x300/12121a/00ff66?text=KILOWATT+CASE" class="max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] relative z-10" alt="Case">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Case Spinner Modal (If active opening) -->
+            <div id="caseOpenerModal" class="hidden bg-[#12121a] border border-neon-green/40 rounded-2xl p-6 shadow-2xl relative">
+                <button onclick="closeCaseOpener()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="text-center mb-4">
+                    <h2 id="activeCaseTitle" class="text-2xl font-black text-white">Kilowatt Case</h2>
+                    <p class="text-xs text-gray-400">Стоимость открытия: <span id="activeCasePrice" class="text-neon-green font-bold">$2.50</span></p>
+                </div>
+
+                <!-- Roulette Strip Component -->
+                <div class="roulette-container h-44 mb-6">
+                    <div class="roulette-marker"></div>
+                    <div id="rouletteStrip" class="roulette-strip items-center h-full pl-[50%]">
+                        <!-- Dynamically filled with skin cards -->
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <button id="spinBtn" onclick="spinRoulette()" class="w-full sm:w-auto px-10 py-3.5 rounded-xl font-extrabold text-base text-black bg-gradient-to-r from-neon-green to-emerald-400 hover:from-emerald-400 hover:to-neon-green transition-all shadow-xl glow-green transform active:scale-95">
+                        <i class="fa-solid fa-play mr-2"></i> Открыть за <span id="spinBtnPrice">$2.50</span>
+                    </button>
+                </div>
+
+                <!-- Won Item Result Banner (Initially Hidden) -->
+                <div id="dropResultBox" class="hidden mt-6 bg-[#0a0a0f] border border-neon-green p-4 rounded-xl text-center animate-bounce-short">
+                    <span class="text-xs text-neon-green uppercase font-bold tracking-widest block mb-1">Поздравляем! Ваш выигрыш:</span>
+                    <h3 id="wonItemName" class="text-xl font-black text-white">AK-47 | Inheritance</h3>
+                    <p id="wonItemPrice" class="text-sm font-bold text-neon-green mb-3">$145.00</p>
+                    <div class="flex items-center justify-center space-x-3">
+                        <button onclick="sellWonItem()" class="px-5 py-2 rounded-lg bg-neon-green/20 hover:bg-neon-green/30 text-neon-green border border-neon-green/40 font-bold text-xs transition-all">
+                            Продать за <span id="sellPriceText">$145.00</span>
+                        </button>
+                        <button onclick="keepWonItem()" class="px-5 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all">
+                            Оставить в инвентаре
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case Grid Category Section -->
+            <div id="casesListSection" class="space-y-4">
+                <div class="flex items-center justify-between border-b border-[#1f1f2e] pb-3">
+                    <h2 class="text-xl font-black text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-box text-neon-green"></i>
+                        <span>Официальные кейсы CS2</span>
+                    </h2>
+                    <span class="text-xs text-gray-400 font-mono">6 Доступных кейсов</span>
+                </div>
+
+                <!-- Cases Grid -->
+                <div id="casesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Cards rendered dynamically by JS -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== TAB 2: UPGRADER (АПГРЕЙДЕР) ==================== -->
+        <section id="tab-upgrader" class="hidden space-y-8">
+            <div class="text-center max-w-xl mx-auto space-y-2">
+                <h2 class="text-3xl font-black text-white">
+                    НЕОНОВЫЙ <span class="text-neon-gradient">АПГРЕЙДЕР</span>
+                </h2>
+                <p class="text-xs text-gray-400">
+                    Выберите предмет из инвентаря или укажите сумму, выберите желаемый скин и испробуйте удачу. Победа увеличивает ваш счетчик <strong class="text-white">📈 Успешных апгрейдов</strong>!
+                </p>
+            </div>
+
+            <!-- Upgrader Workspace Card -->
+            <div class="bg-[#12121a] border border-[#1f1f2e] rounded-2xl p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center relative">
+                
+                <!-- Left Column: Input Source (Inventory or Cash) -->
+                <div class="space-y-4 text-center">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400">1. Ваша ставка</h3>
+                    
+                    <!-- Toggle Switch (Balance or Item) -->
+                    <div class="flex rounded-lg bg-[#0a0a0f] p-1 border border-[#1f1f2e]">
+                        <button onclick="setUpgraderMode('item')" id="upgModeItem" class="flex-1 py-1.5 rounded-md text-xs font-bold text-neon-green bg-neon-green/10 border border-neon-green/30">Предмет</button>
+                        <button onclick="setUpgraderMode('balance')" id="upgModeBalance" class="flex-1 py-1.5 rounded-md text-xs font-bold text-gray-400 hover:text-white">Баланс ($)</button>
+                    </div>
+
+                    <!-- Item Selected Box -->
+                    <div id="upgInputItemBox" class="bg-[#0a0a0f] border border-[#1f1f2e] rounded-xl p-4 min-h-[160px] flex flex-col items-center justify-center cursor-pointer hover:border-neon-green/50 transition-all" onclick="openInventorySelectModal()">
+                        <div id="upgSelectedItemContent" class="space-y-2">
+                            <i class="fa-solid fa-plus-circle text-3xl text-neon-green"></i>
+                            <p class="text-xs text-gray-400">Нажмите, чтобы выбрать скин из инвентаря</p>
+                        </div>
+                    </div>
+
+                    <!-- Balance Input Box (Hidden by default) -->
+                    <div id="upgInputBalanceBox" class="hidden space-y-2">
+                        <label class="text-xs text-gray-400 block text-left">Сумма в $:</label>
+                        <input type="number" id="upgBetAmount" value="5.00" min="0.5" step="0.5" oninput="recalculateUpgradeChance()" class="w-full bg-[#0a0a0f] border border-[#1f1f2e] rounded-xl px-4 py-3 font-mono font-bold text-neon-green text-center focus:outline-none focus:border-neon-green">
+                    </div>
+                </div>
+
+                <!-- Center Column: Wheel Gauge & Spin Button -->
+                <div class="flex flex-col items-center justify-center space-y-6">
+                    <div class="relative w-56 h-56 flex items-center justify-center">
+                        <!-- SVG Ring Gauge -->
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                            <circle class="upgrade-ring-bg" cx="50" cy="50" r="42" stroke-width="8" fill="transparent"/>
+                            <circle id="upgradeRingWin" class="upgrade-ring-win" cx="50" cy="50" r="42" stroke-width="8" fill="transparent" stroke-dasharray="264" stroke-dashoffset="132"/>
+                        </svg>
+                        
+                        <!-- Rotating Arrow Needle -->
+                        <div id="upgNeedle" class="absolute w-full h-full flex items-center justify-center transition-transform duration-[4000ms] cubic-bezier(0.15, 0.9, 0.2, 1)">
+                            <div class="w-1 h-20 bg-neon-magenta rounded-full origin-bottom -translate-y-6 shadow-[0_0_10px_#ff00cc]"></div>
+                        </div>
+
+                        <!-- Center Odds Display -->
+                        <div class="absolute text-center z-10">
+                            <span class="text-[10px] uppercase text-gray-400 block font-bold">Шанс</span>
+                            <span id="upgChanceText" class="text-3xl font-black font-mono text-neon-green">50.0%</span>
+                            <span id="upgMultiplierText" class="text-[11px] text-neon-magenta font-mono block font-bold">x2.00</span>
+                        </div>
+                    </div>
+
+                    <button id="startUpgradeBtn" onclick="runUpgrade()" class="w-full py-4 rounded-xl font-black text-base text-black bg-gradient-to-r from-neon-green to-emerald-400 hover:from-emerald-400 hover:to-neon-green transition-all glow-green shadow-xl transform active:scale-95 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>УЛУЧШИТЬ</span>
+                    </button>
+                </div>
+
+                <!-- Right Column: Target CS2 Skin Selection -->
+                <div class="space-y-4 text-center">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400">2. Желаемый скин</h3>
+                    
+                    <div id="upgTargetItemBox" class="bg-[#0a0a0f] border border-[#1f1f2e] rounded-xl p-4 min-h-[200px] flex flex-col items-center justify-center cursor-pointer hover:border-neon-magenta/50 transition-all" onclick="openTargetSkinModal()">
+                        <div id="upgTargetContent" class="space-y-2">
+                            <i class="fa-solid fa-crosshairs text-3xl text-neon-magenta"></i>
+                            <p class="text-xs text-gray-400">Выберите целовой скин из каталога</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: SEASON PASS (ПАСС) ==================== -->
+        <section id="tab-pass" class="hidden space-y-6">
+            <div class="bg-gradient-to-r from-purple-900/40 via-neon-dark to-purple-900/40 border border-purple-500/30 rounded-2xl p-6 sm:p-8 text-center relative overflow-hidden">
+                <div class="space-y-2 max-w-xl mx-auto">
+                    <span class="px-3 py-1 rounded-full bg-yellow-400/10 text-yellow-400 font-bold text-xs uppercase tracking-widest border border-yellow-400/30">Сезон 1: Cyber Neon</span>
+                    <h2 class="text-3xl font-black text-white">СЕЗОННЫЙ ПРОПУСК</h2>
+                    <p class="text-xs text-gray-400">Открывайте кейсы и делайте апгрейды, чтобы получать очки опыта (XP) и забирать ценные скины CS2!</p>
+                </div>
+
+                <!-- Pass Level Progress -->
+                <div class="max-w-2xl mx-auto mt-6 space-y-2">
+                    <div class="flex justify-between text-xs font-bold">
+                        <span class="text-neon-green">Уровень 3</span>
+                        <span class="text-gray-400">450 / 1000 XP</span>
+                    </div>
+                    <div class="w-full h-4 bg-[#0a0a0f] rounded-full border border-[#1f1f2e] p-0.5">
+                        <div class="h-full bg-gradient-to-r from-neon-green to-neon-magenta rounded-full w-[45%] shadow-[0_0_10px_#00ff66]"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pass Rewards Track -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-[#12121a] border border-[#1f1f2e] p-4 rounded-xl text-center space-y-3 relative">
+                    <span class="absolute top-2 left-2 text-[10px] font-bold text-gray-500 font-mono">LVL 1</span>
+                    <div class="w-16 h-16 mx-auto bg-neon-green/10 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-coins text-2xl text-neon-green"></i>
+                    </div>
+                    <h4 class="text-xs font-bold text-white">$1.00 На баланс</h4>
+                    <button class="w-full py-1.5 rounded-lg bg-neon-green text-black font-extrabold text-xs">Забрано</button>
+                </div>
+
+                <div class="bg-[#12121a] border border-neon-green p-4 rounded-xl text-center space-y-3 relative shadow-lg glow-green">
+                    <span class="absolute top-2 left-2 text-[10px] font-bold text-neon-green font-mono">LVL 2</span>
+                    <div class="w-16 h-16 mx-auto bg-neon-green/10 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-box text-2xl text-neon-green"></i>
+                    </div>
+                    <h4 class="text-xs font-bold text-white">Бесплатный Gamma Case</h4>
+                    <button onclick="claimPassReward(2)" class="w-full py-1.5 rounded-lg bg-neon-green hover:bg-emerald-300 text-black font-extrabold text-xs transition-all">Забрать</button>
+                </div>
+
+                <div class="bg-[#12121a] border border-[#1f1f2e] opacity-60 p-4 rounded-xl text-center space-y-3 relative">
+                    <span class="absolute top-2 left-2 text-[10px] font-bold text-gray-500 font-mono">LVL 3</span>
+                    <div class="w-16 h-16 mx-auto bg-purple-500/10 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-gun text-2xl text-purple-400"></i>
+                    </div>
+                    <h4 class="text-xs font-bold text-white">AK-47 | Point Disarray</h4>
+                    <button disabled class="w-full py-1.5 rounded-lg bg-white/5 text-gray-500 font-bold text-xs cursor-not-allowed"><i class="fa-solid fa-lock mr-1"></i> Закрыто</button>
+                </div>
+
+                <div class="bg-[#12121a] border border-[#1f1f2e] opacity-60 p-4 rounded-xl text-center space-y-3 relative">
+                    <span class="absolute top-2 left-2 text-[10px] font-bold text-gray-500 font-mono">LVL 4</span>
+                    <div class="w-16 h-16 mx-auto bg-yellow-500/10 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-[#ffd700] fa-shield-halved text-2xl text-yellow-400"></i>
+                    </div>
+                    <h4 class="text-xs font-bold text-white">Нож Karambit (Тайное)</h4>
+                    <button disabled class="w-full py-1.5 rounded-lg bg-white/5 text-gray-500 font-bold text-xs cursor-not-allowed"><i class="fa-solid fa-lock mr-1"></i> Закрыто</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 4: LEADERBOARD (РЕЙТИНГ) ==================== -->
+        <section id="tab-leaderboard" class="hidden space-y-6">
+            <div class="text-center max-w-xl mx-auto space-y-2">
+                <h2 class="text-3xl font-black text-white">
+                    ТОП <span class="text-neon-gradient">ИГРОКОВ</span>
+                </h2>
+                <p class="text-xs text-gray-400">Лидеры по открытым кейсам и успешным апгрейдам в этом месяце.</p>
+            </div>
+
+            <div class="bg-[#12121a] border border-[#1f1f2e] rounded-2xl overflow-hidden shadow-xl">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-[#0a0a0f] text-gray-400 text-xs uppercase font-mono border-b border-[#1f1f2e]">
+                        <tr>
+                            <th class="py-4 px-6">Место</th>
+                            <th class="py-4 px-6">Игрок</th>
+                            <th class="py-4 px-6">🔑 Кейсов</th>
+                            <th class="py-4 px-6">📈 Апгрейдов</th>
+                            <th class="py-4 px-6">Лучший Дроп</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody" class="divide-y divide-[#1f1f2e]">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 5: USER INVENTORY (ИНВЕНТАРЬ) ==================== -->
+        <section id="tab-inventory" class="hidden space-y-6">
+            <div class="flex items-center justify-between border-b border-[#1f1f2e] pb-4">
+                <div>
+                    <h2 class="text-2xl font-black text-white">Ваш Инвентарь</h2>
+                    <p class="text-xs text-gray-400">Скины, полученные из кейсов и апгрейдов</p>
+                </div>
+                <button onclick="sellAllInventory()" class="px-4 py-2 rounded-xl bg-neon-green/20 hover:bg-neon-green/30 text-neon-green border border-neon-green/40 font-extrabold text-xs transition-all">
+                    Продать всё в $
+                </button>
+            </div>
+
+            <div id="userInventoryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Dynamically populated inventory items -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#0a0a0f] border-t border-[#1f1f2e] py-8 px-4 text-center text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+                <span class="font-extrabold text-white">NEON<span class="text-neon-green">DROP</span></span>
+                <span>© 2026 CS2 Cases & Upgrader</span>
+            </div>
+            <div class="flex space-x-6 text-gray-400">
+                <a href="#" class="hover:text-neon-green">Пользовательское соглашение</a>
+                <a href="#" class="hover:text-neon-green">Provably Fair</a>
+                <a href="#" onclick="openIntegrationModal(); return false;" class="hover:text-neon-green">Подключение (Бэкенд)</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==================== MODAL: DEPOSIT (ПОПОЛНЕНИЕ БАЛАНСА) ==================== -->
+    <div id="depositModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-[#12121a] border border-neon-magenta/50 rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl relative animate-fade-in">
+            <button onclick="closeDepositModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="text-center space-y-1">
+                <h3 class="text-2xl font-black text-white">ПОПОЛНЕНИЕ БАЛАНСА</h3>
+                <p class="text-xs text-gray-400">Выберите удобный способ пополнения счёта</p>
+            </div>
+
+            <!-- Dev Fast Topup (For testing during development) -->
+            <div class="bg-neon-green/10 border border-neon-green/30 p-3 rounded-xl text-center space-y-2">
+                <span class="text-[11px] font-bold text-neon-green uppercase tracking-wider block"><i class="fa-solid fa-flask mr-1"></i> Быстрое тестовое начисление (Dev Mode)</span>
+                <div class="flex justify-center space-x-2">
+                    <button onclick="addTestBalance(10)" class="px-3 py-1.5 rounded-lg bg-neon-green text-black font-extrabold text-xs hover:bg-emerald-300 transition-all">+$10.00</button>
+                    <button onclick="addTestBalance(50)" class="px-3 py-1.5 rounded-lg bg-neon-green text-black font-extrabold text-xs hover:bg-emerald-300 transition-all">+$50.00</button>
+                    <button onclick="addTestBalance(100)" class="px-3 py-1.5 rounded-lg bg-neon-green text-black font-extrabold text-xs hover:bg-emerald-300 transition-all">+$100.00</button>
+                </div>
+            </div>
+
+            <!-- Payment Methods Grid -->
+            <div class="space-y-3">
+                <label class="text-xs font-bold text-gray-400 uppercase">Способы оплаты:</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="p-3 bg-[#0a0a0f] border border-neon-magenta/40 rounded-xl flex items-center space-x-3 cursor-pointer hover:bg-white/5 transition-all">
+                        <i class="fa-solid fa-shield-halved text-neon-magenta text-xl"></i>
+                        <div>
+                            <span class="text-xs font-bold text-white block">SkinsBack / Waxpeer</span>
+                            <span class="text-[10px] text-gray-400">Депозит скинами CS2</span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-[#0a0a0f] border border-[#1f1f2e] rounded-xl flex items-center space-x-3 cursor-pointer hover:bg-white/5 transition-all">
+                        <i class="fa-brands fa-bitcoin text-amber-500 text-xl"></i>
+                        <div>
+                            <span class="text-xs font-bold text-white block">Криптовалюта</span>
+                            <span class="text-[10px] text-gray-400">USDT, TON, BTC, LTC</span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-[#0a0a0f] border border-[#1f1f2e] rounded-xl flex items-center space-x-3 cursor-pointer hover:bg-white/5 transition-all">
+                        <i class="fa-regular fa-credit-card text-blue-400 text-xl"></i>
+                        <div>
+                            <span class="text-xs font-bold text-white block">Банковские карты</span>
+                            <span class="text-[10px] text-gray-400">MIR / Visa / MasterCard</span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-[#0a0a0f] border border-[#1f1f2e] rounded-xl flex items-center space-x-3 cursor-pointer hover:bg-white/5 transition-all">
+                        <i class="fa-brands fa-apple text-gray-300 text-xl"></i>
+                        <div>
+                            <span class="text-xs font-bold text-white block">SBP / Apple Pay</span>
+                            <span class="text-[10px] text-gray-400">Мгновенная оплата</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Promo Code Input -->
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-gray-400">Промокод на +10% к пополнению:</label>
+                <div class="flex space-x-2">
+                    <input type="text" id="promoInput" placeholder="Например: NEON2026" class="flex-1 bg-[#0a0a0f] border border-[#1f1f2e] rounded-xl px-4 py-2.5 text-xs text-white uppercase focus:outline-none focus:border-neon-magenta">
+                    <button onclick="applyPromo()" class="px-4 py-2.5 rounded-xl bg-neon-magenta text-white font-bold text-xs hover:bg-pink-600 transition-all">Применить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: BACKEND INTEGRATION INFO ==================== -->
+    <div id="integrationModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-[#12121a] border border-neon-green/50 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeIntegrationModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="space-y-1">
+                <span class="text-xs font-bold text-neon-green uppercase tracking-wider font-mono">Архитектура & Сервисы</span>
+                <h3 class="text-2xl font-black text-white">Интеграция бэкенда для NeonDrop</h3>
+            </div>
+
+            <div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+                <div class="p-4 bg-[#0a0a0f] border border-[#1f1f2e] rounded-xl space-y-2">
+                    <h4 class="font-bold text-neon-green text-sm flex items-center space-x-2">
+                        <i class="fa-brands fa-steam"></i>
+                        <span>1. Авторизация через Steam (Steam OpenID)</span>
+                    </h4>
+                    <p>Для входа игроков используется стандартный протокол Steam OpenID. Сервер получает уникальный <code class="text-neon-magenta font-mono">steamID64</code>, имя и аватар игрока. Пароли не требуются.</p>
+                </div>
+
+                <div class="p-4 bg-[#0a0a0f] border border-[#1f1f2e] rounded-xl space-y-2">
+                    <h4 class="font-bold text-neon-magenta text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-wallet"></i>
+                        <span>2. Приём депозитов CS2 скинами (SkinsBack / Skinify / Waxpeer)</span>
+                    </h4>
+                    <p>Сервисы <strong>SkinsBack API</strong> или <strong>Waxpeer P2P</strong> позволяют принимать скины от пользователей с автоматической оценкой стоимости и моментальным зачислением $ на баланс сайта.</p>
+                </div>
+
+                <div class="p-4 bg-[#0a0a0f] border border-[#1f1f2e] rounded-xl space-y-2">
+                    <h4 class="font-bold text-amber-400 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-server"></i>
+                        <span>3. Бэкенд и хостинг разработчика</span>
+                    </h4>
+                    <p>Для разработки подходит недорогой VPS (Hetzner, Timeweb Cloud ~€3-5/мес) на Node.js (Express/Fastify) или Python (FastAPI) с базой данных PostgreSQL для хранения истории дропов и балансов.</p>
+                </div>
+            </div>
+            
+            <div class="text-right">
+                <button onclick="closeIntegrationModal()" class="px-5 py-2.5 rounded-xl bg-neon-green text-black font-extrabold text-xs">Понятно</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Target Skin Picker Modal for Upgrader -->
+    <div id="targetSkinModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-[#12121a] border border-[#1f1f2e] rounded-2xl max-w-3xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-[#1f1f2e] pb-3">
+                <h3 class="text-lg font-bold text-white">Выберите целевой скин для апгрейда</h3>
+                <button onclick="closeTargetSkinModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="targetSkinGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 overflow-y-auto p-1 flex-1">
+                <!-- Skins rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Selector Modal for Upgrader -->
+    <div id="invSelectModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-[#12121a] border border-[#1f1f2e] rounded-2xl max-w-3xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-[#1f1f2e] pb-3">
+                <h3 class="text-lg font-bold text-white">Выберите ваш скин для ставки</h3>
+                <button onclick="closeInventorySelectModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="upgInvSelectGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 overflow-y-auto p-1 flex-1">
+                <!-- User Inventory rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- APPLICATION LOGIC & SOUND SYNTHESIS -->
+    <script>
+        // Web Audio API Sound Synthesizer for native sound effects without external audio file dependencies
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            tick() {
+                this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.04);
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.04);
+            }
+            win() {
+                this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const now = this.ctx.currentTime;
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C E G C chords
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.4);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.4);
+                });
+            }
+            fail() {
+                this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(80, this.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            }
+        }
+        const sfx = new SoundFX();
+
+        // Authentic CS2 Skins Database with SVGs & Rarities
+        const CS2_SKINS = [
+            { id: 'b_gamma', name: 'Butterfly Knife | Gamma Doppler', wear: 'Factory New', price: 1850.00, rarity: 'gold', color: '#00ff66', type: 'Knife' },
+            { id: 'k_ruby', name: 'Karambit | Doppler (Ruby)', wear: 'Factory New', price: 2400.00, rarity: 'gold', color: '#ff0055', type: 'Knife' },
+            { id: 'b_lore', name: 'Butterfly Knife | Lore', wear: 'Minimal Wear', price: 1450.00, rarity: 'gold', color: '#ffd700', type: 'Knife' },
+            { id: 'ak_inh', name: 'AK-47 | Inheritance', wear: 'Factory New', price: 145.00, rarity: 'covert', color: '#eb4b4b', type: 'Rifle' },
+            { id: 'awp_chrome', name: 'AWP | Chrome Cannon', wear: 'Field-Tested', price: 85.00, rarity: 'covert', color: '#eb4b4b', type: 'Sniper' },
+            { id: 'm4_print', name: 'M4A1-S | Printstream', wear: 'Factory New', price: 290.00, rarity: 'covert', color: '#eb4b4b', type: 'Rifle' },
+            { id: 'ak_fire', name: 'AK-47 | Fire Serpent', wear: 'Field-Tested', price: 720.00, rarity: 'covert', color: '#eb4b4b', type: 'Rifle' },
+            { id: 'awp_asiimov', name: 'AWP | Asiimov', wear: 'Field-Tested', price: 110.00, rarity: 'classified', color: '#d32ce6', type: 'Sniper' },
+            { id: 'deagle_print', name: 'Desert Eagle | Printstream', wear: 'Factory New', price: 95.00, rarity: 'classified', color: '#d32ce6', type: 'Pistol' },
+            { id: 'usp_kill', name: 'USP-S | Kill Confirmed', wear: 'Minimal Wear', price: 65.00, rarity: 'classified', color: '#d32ce6', type: 'Pistol' },
+            { id: 'ak_headshot', name: 'AK-47 | Head Shot', wear: 'Field-Tested', price: 28.00, rarity: 'restricted', color: '#8847ff', type: 'Rifle' },
+            { id: 'glock_vogue', name: 'Glock-18 | Vogue', wear: 'Factory New', price: 12.50, rarity: 'restricted', color: '#8847ff', type: 'Pistol' },
+            { id: 'm4_temukau', name: 'M4A4 | Temukau', wear: 'Field-Tested', price: 42.00, rarity: 'classified', color: '#d32ce6', type: 'Rifle' },
+            { id: 'mp9_starlight', name: 'MP9 | Starlight Protector', wear: 'Field-Tested', price: 6.50, rarity: 'milspec', color: '#4b69ff', type: 'SMG' }
+        ];
+
+        // Authentic CS2 Cases Database
+        const CS2_CASES = [
+            { id: 'kilowatt', name: 'Kilowatt Case', price: 2.50, img: 'https://placehold.co/300x220/12121a/00ff66?text=KILOWATT+CASE', items: ['b_gamma', 'ak_inh', 'awp_chrome', 'glock_vogue', 'mp9_starlight'] },
+            { id: 'revolution', name: 'Revolution Case', price: 1.80, img: 'https://placehold.co/300x220/12121a/ff00cc?text=REVOLUTION+CASE', items: ['m4_temukau', 'ak_headshot', 'm4_print', 'usp_kill'] },
+            { id: 'dreams', name: 'Dreams & Nightmares Case', price: 1.20, img: 'https://placehold.co/300x220/12121a/9d00ff?text=DREAMS+NIGHTMARES', items: ['k_ruby', 'deagle_print', 'awp_asiimov', 'glock_vogue'] },
+            { id: 'bravo', name: 'Operation Bravo Case', price: 45.00, img: 'https://placehold.co/300x220/12121a/ffd700?text=BRAVO+CASE', items: ['b_lore', 'ak_fire', 'awp_asiimov', 'm4_print'] },
+            { id: 'gamma', name: 'Gamma Case', price: 2.10, img: 'https://placehold.co/300x220/12121a/00ff66?text=GAMMA+CASE', items: ['b_gamma', 'm4_print', 'glock_vogue', 'mp9_starlight'] },
+            { id: 'chroma2', name: 'Chroma 2 Case', price: 2.80, img: 'https://placehold.co/300x220/12121a/eb4b4b?text=CHROMA+2+CASE', items: ['k_ruby', 'ak_fire', 'usp_kill', 'deagle_print'] }
+        ];
+
+        // User App State
+        let currentUser = {
+            loggedIn: false,
+            name: 'Gamer_CS2',
+            avatar: 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg',
+            balance: 0.00,
+            casesOpened: 0, // 🔑 COUNTER (starts 0, ONLY INCREMENTS)
+            upgradesWon: 0   // 📈 COUNTER (starts 0, INCREMENTS ON WIN)
+        };
+
+        let userInventory = [
+            { ...CS2_SKINS.find(s => s.id === 'glock_vogue'), instanceId: 101 },
+            { ...CS2_SKINS.find(s => s.id === 'ak_headshot'), instanceId: 102 }
+        ];
+
+        let activeCase = null;
+        let rouletteItems = [];
+        let wonItemCandidate = null;
+        let isSpinning = false;
+
+        // Upgrader state
+        let upgraderMode = 'item'; // 'item' or 'balance'
+        let selectedUpgInputItem = null;
+        let selectedUpgTargetItem = CS2_SKINS[3]; // Default target AK Inheritance
+
+        // Initial setup
+        window.onload = function() {
+            renderCases();
+            renderLiveFeed();
+            renderLeaderboard();
+            renderInventory();
+            updateUpgraderUI();
+        };
+
+        // Navigation Tabs Controller
+        function switchTab(tabId) {
+            document.querySelectorAll('section[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+            const activeTabSection = document.getElementById(`tab-${tabId}`);
+            if (activeTabSection) activeTabSection.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.className = 'nav-tab px-4 py-2.5 rounded-lg font-bold text-sm flex items-center space-x-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200';
+            });
+            const activeNavBtn = document.getElementById(`nav-${tabId}`);
+            if (activeNavBtn) {
+                activeNavBtn.className = 'nav-tab px-4 py-2.5 rounded-lg font-bold text-sm flex items-center space-x-2 bg-neon-green/10 text-neon-green border border-neon-green/30 transition-all duration-200';
+            }
+        }
+
+        // Steam Auth Demo Simulation
+        function loginSteamDemo() {
+            currentUser.loggedIn = true;
+            currentUser.name = 'SteamPlayer_CS2';
+            currentUser.avatar = 'https://avatars.cloudflare.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg';
+            currentUser.balance = 0.00; // Reset balance to zero upon initial Steam login
+            currentUser.casesOpened = 0; // 🔑 Explicitly 0
+            currentUser.upgradesWon = 0;  // 📈 Explicitly 0
+
+            document.getElementById('authLoggedOut').classList.add('hidden');
+            document.getElementById('authLoggedIn').classList.remove('hidden');
+            document.getElementById('authLoggedIn').classList.add('flex');
+
+            document.getElementById('userName').innerText = currentUser.name;
+            document.getElementById('userAvatar').src = currentUser.avatar;
+            updateUserUIStats();
+        }
+
+        function logoutSteam() {
+            currentUser.loggedIn = false;
+            document.getElementById('authLoggedIn').classList.add('hidden');
+            document.getElementById('authLoggedIn').classList.remove('flex');
+            document.getElementById('authLoggedOut').classList.remove('hidden');
+        }
+
+        function updateUserUIStats() {
+            document.getElementById('userBalance').innerText = `$${currentUser.balance.toFixed(2)}`;
+            document.getElementById('statCasesOpened').innerText = currentUser.casesOpened;
+            document.getElementById('statUpgradesWon').innerText = currentUser.upgradesWon;
+        }
+
+        // Render Cases Grid
+        function renderCases() {
+            const grid = document.getElementById('casesGrid');
+            grid.innerHTML = CS2_CASES.map(c => `
+                <div onclick="openCaseModal('${c.id}')" class="bg-[#12121a] border border-[#1f1f2e] hover:border-neon-green/50 rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] cursor-pointer group relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute inset-0 bg-gradient-to-t from-neon-green/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="text-center space-y-3 relative z-10">
+                        <img src="${c.img}" alt="${c.name}" class="h-36 mx-auto object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300">
+                        <div>
+                            <h3 class="text-base font-extrabold text-white group-hover:text-neon-green transition-colors">${c.name}</h3>
+                            <span class="text-xs text-gray-400 font-mono">${c.items.length} Скинов в кейсе</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-[#1f1f2e] flex items-center justify-between relative z-10">
+                        <span class="text-xs font-bold text-gray-400">Цена:</span>
+                        <span class="text-sm font-extrabold font-mono text-neon-green bg-neon-green/10 border border-neon-green/30 px-3 py-1 rounded-lg">$${c.price.toFixed(2)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Case Opening Roulette Logic
+        function openCaseModal(caseId) {
+            activeCase = CS2_CASES.find(c => c.id === caseId);
+            if (!activeCase) return;
+
+            document.getElementById('activeCaseTitle').innerText = activeCase.name;
+            document.getElementById('activeCasePrice').innerText = `$${activeCase.price.toFixed(2)}`;
+            document.getElementById('spinBtnPrice').innerText = `$${activeCase.price.toFixed(2)}`;
+            document.getElementById('caseOpenerModal').classList.remove('hidden');
+            document.getElementById('dropResultBox').classList.add('hidden');
+
+            prepareRouletteStrip();
+            document.getElementById('caseOpenerModal').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function closeCaseOpener() {
+            document.getElementById('caseOpenerModal').classList.add('hidden');
+        }
+
+        function prepareRouletteStrip() {
+            const strip = document.getElementById('rouletteStrip');
+            strip.style.transition = 'none';
+            strip.style.transform = 'translateX(0px)';
+
+            // Build random array of 50 items for roulette scroll
+            const caseSkinObjects = activeCase.items.map(id => CS2_SKINS.find(s => s.id === id));
+            rouletteItems = [];
+            for (let i = 0; i < 50; i++) {
+                const randomItem = caseSkinObjects[Math.floor(Math.random() * caseSkinObjects.length)];
+                rouletteItems.push(randomItem);
+            }
+            
+            // Item at index 40 is win candidate
+            wonItemCandidate = rouletteItems[40];
+
+            strip.innerHTML = rouletteItems.map(item => `
+                <div class="w-36 h-36 flex-shrink-0 mx-1.5 bg-[#12121a] rounded-xl p-3 flex flex-col justify-between text-center relative border border-[#1f1f2e] bg-rarity-${item.rarity}">
+                    <span class="text-[9px] font-mono font-bold text-gray-400 uppercase tracking-tighter">${item.type}</span>
+                    <div class="my-auto">
+                        <div class="w-12 h-12 mx-auto rounded-full flex items-center justify-center font-bold text-xs mb-1" style="background: ${item.color}20; color: ${item.color}">
+                            <i class="fa-solid fa-gun"></i>
+                        </div>
+                        <h5 class="text-[11px] font-extrabold text-white truncate px-1">${item.name}</h5>
+                    </div>
+                    <span class="text-[11px] font-mono font-extrabold text-neon-green">$${item.price.toFixed(2)}</span>
+                </div>
+            `).join('');
+        }
+
+        function spinRoulette() {
+            if (isSpinning) return;
+            if (!currentUser.loggedIn) {
+                alert('Пожалуйста, войдите через Steam для открытия кейса!');
+                loginSteamDemo();
+                return;
+            }
+            if (currentUser.balance < activeCase.price) {
+                alert('Недостаточно средств на балансе! Нажмите "+ Депозит".');
+                openDepositModal();
+                return;
+            }
+
+            // Deduct cost and INCREMENT 🔑 Total Cases Opened by +1 (NEVER DECREMENTS)
+            currentUser.balance -= activeCase.price;
+            currentUser.casesOpened += 1;
+            updateUserUIStats();
+
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+            document.getElementById('spinBtn').classList.add('opacity-50');
+            document.getElementById('dropResultBox').classList.add('hidden');
+
+            const strip = document.getElementById('rouletteStrip');
+            const cardWidth = 144 + 12; // 36w + margins
+            const winningIndex = 40;
+            const targetX = -(winningIndex * cardWidth - (strip.parentElement.offsetWidth / 2) + (cardWidth / 2)) + (Math.random() * 40 - 20);
+
+            strip.style.transition = 'transform 6s cubic-bezier(0.08, 0.8, 0.15, 1)';
+            strip.style.transform = `translateX(${targetX}px)`;
+
+            // Sound ticks interval simulation
+            let tickCount = 0;
+            const tickInterval = setInterval(() => {
+                sfx.tick();
+                tickCount++;
+                if (tickCount > 35) clearInterval(tickInterval);
+            }, 140);
+
+            setTimeout(() => {
+                isSpinning = false;
+                document.getElementById('spinBtn').disabled = false;
+                document.getElementById('spinBtn').classList.remove('opacity-50');
+                
+                sfx.win();
+                showDropResult(wonItemCandidate);
+            }, 6100);
+        }
+
+        function showDropResult(item) {
+            document.getElementById('wonItemName').innerText = item.name;
+            document.getElementById('wonItemPrice').innerText = `$${item.price.toFixed(2)}`;
+            document.getElementById('sellPriceText').innerText = `$${(item.price * 0.9).toFixed(2)}`;
+            document.getElementById('dropResultBox').classList.remove('hidden');
+
+            // Add item to live feed chip
+            addLiveDropChip(item);
+        }
+
+        function sellWonItem() {
+            const val = wonItemCandidate.price * 0.9;
+            currentUser.balance += val;
+            updateUserUIStats();
+            document.getElementById('dropResultBox').classList.add('hidden');
+            alert(`Скин продан за $${val.toFixed(2)}`);
+        }
+
+        function keepWonItem() {
+            userInventory.push({ ...wonItemCandidate, instanceId: Date.now() });
+            renderInventory();
+            document.getElementById('dropResultBox').classList.add('hidden');
+            alert('Скин перенесён в ваш инвентарь!');
+        }
+
+        // Upgrader Page Logic
+        function setUpgraderMode(mode) {
+            upgraderMode = mode;
+            if (mode === 'item') {
+                document.getElementById('upgModeItem').className = 'flex-1 py-1.5 rounded-md text-xs font-bold text-neon-green bg-neon-green/10 border border-neon-green/30';
+                document.getElementById('upgModeBalance').className = 'flex-1 py-1.5 rounded-md text-xs font-bold text-gray-400 hover:text-white';
+                document.getElementById('upgInputItemBox').classList.remove('hidden');
+                document.getElementById('upgInputBalanceBox').classList.add('hidden');
+            } else {
+                document.getElementById('upgModeBalance').className = 'flex-1 py-1.5 rounded-md text-xs font-bold text-neon-green bg-neon-green/10 border border-neon-green/30';
+                document.getElementById('upgModeItem').className = 'flex-1 py-1.5 rounded-md text-xs font-bold text-gray-400 hover:text-white';
+                document.getElementById('upgInputBalanceBox').classList.remove('hidden');
+                document.getElementById('upgInputItemBox').classList.add('hidden');
+            }
+            recalculateUpgradeChance();
+        }
+
+        function openInventorySelectModal() {
+            const grid = document.getElementById('upgInvSelectGrid');
+            grid.innerHTML = userInventory.map(item => `
+                <div onclick="selectInputItemForUpgrade(${item.instanceId})" class="p-3 bg-[#0a0a0f] border border-[#1f1f2e] hover:border-neon-green rounded-xl text-center cursor-pointer">
+                    <span class="text-[10px] font-mono text-neon-green block">$${item.price.toFixed(2)}</span>
+                    <h5 class="text-xs font-bold text-white truncate">${item.name}</h5>
+                </div>
+            `).join('');
+            document.getElementById('invSelectModal').classList.remove('hidden');
+        }
+        function closeInventorySelectModal() { document.getElementById('invSelectModal').classList.add('hidden'); }
+
+        function selectInputItemForUpgrade(instanceId) {
+            selectedUpgInputItem = userInventory.find(i => i.instanceId === instanceId);
+            closeInventorySelectModal();
+            updateUpgraderUI();
+        }
+
+        function openTargetSkinModal() {
+            const grid = document.getElementById('targetSkinGrid');
+            grid.innerHTML = CS2_SKINS.map(item => `
+                <div onclick="selectTargetItemForUpgrade('${item.id}')" class="p-3 bg-[#0a0a0f] border border-[#1f1f2e] hover:border-neon-magenta rounded-xl text-center cursor-pointer">
+                    <span class="text-[10px] font-mono text-neon-magenta block">$${item.price.toFixed(2)}</span>
+                    <h5 class="text-xs font-bold text-white truncate">${item.name}</h5>
+                </div>
+            `).join('');
+            document.getElementById('targetSkinModal').classList.remove('hidden');
+        }
+        function closeTargetSkinModal() { document.getElementById('targetSkinModal').classList.add('hidden'); }
+
+        function selectTargetItemForUpgrade(skinId) {
+            selectedUpgTargetItem = CS2_SKINS.find(s => s.id === skinId);
+            closeTargetSkinModal();
+            updateUpgraderUI();
+        }
+
+        function updateUpgraderUI() {
+            if (selectedUpgInputItem) {
+                document.getElementById('upgSelectedItemContent').innerHTML = `
+                    <h4 class="text-xs font-bold text-white">${selectedUpgInputItem.name}</h4>
+                    <span class="text-sm font-bold font-mono text-neon-green">$${selectedUpgInputItem.price.toFixed(2)}</span>
+                `;
+            }
+            if (selectedUpgTargetItem) {
+                document.getElementById('upgTargetContent').innerHTML = `
+                    <h4 class="text-xs font-bold text-white">${selectedUpgTargetItem.name}</h4>
+                    <span class="text-sm font-bold font-mono text-neon-magenta">$${selectedUpgTargetItem.price.toFixed(2)}</span>
+                `;
+            }
+            recalculateUpgradeChance();
+        }
+
+        function recalculateUpgradeChance() {
+            let betVal = 5.00;
+            if (upgraderMode === 'item' && selectedUpgInputItem) {
+                betVal = selectedUpgInputItem.price;
+            } else if (upgraderMode === 'balance') {
+                betVal = parseFloat(document.getElementById('upgBetAmount').value) || 1.0;
+            }
+            const targetVal = selectedUpgTargetItem ? selectedUpgTargetItem.price : 100.00;
+
+            let chance = (betVal / targetVal) * 95; // 95% RTP index
+            if (chance > 90) chance = 90;
+            if (chance < 1) chance = 1;
+
+            document.getElementById('upgChanceText').innerText = `${chance.toFixed(1)}%`;
+            document.getElementById('upgMultiplierText').innerText = `x${(100 / chance).toFixed(2)}`;
+
+            // Calculate SVG ring stroke dashoffset
+            const circumference = 264;
+            const offset = circumference - (circumference * chance) / 100;
+            document.getElementById('upgradeRingWin').style.strokeDashoffset = offset;
+        }
+
+        function runUpgrade() {
+            if (!currentUser.loggedIn) {
+                alert('Пожалуйста, войдите через Steam!');
+                loginSteamDemo();
+                return;
+            }
+            let betVal = 5.00;
+            if (upgraderMode === 'item') {
+                if (!selectedUpgInputItem) { alert('Выберите предмет для апгрейда!'); return; }
+                betVal = selectedUpgInputItem.price;
+            } else {
+                betVal = parseFloat(document.getElementById('upgBetAmount').value) || 0;
+                if (currentUser.balance < betVal) { alert('Недостаточно средств!'); openDepositModal(); return; }
+                currentUser.balance -= betVal;
+            }
+
+            const chance = parseFloat(document.getElementById('upgChanceText').innerText);
+            const winRnd = Math.random() * 100;
+            const isWin = winRnd <= chance;
+
+            const btn = document.getElementById('startUpgradeBtn');
+            btn.disabled = true;
+
+            // Needle Rotation animation
+            const needle = document.getElementById('upgNeedle');
+            const targetDegrees = 360 * 5 + (isWin ? (chance * 3.6 / 2) : (chance * 3.6 + 40));
+            needle.style.transform = `rotate(${targetDegrees}deg)`;
+
+            setTimeout(() => {
+                btn.disabled = false;
+                needle.style.transform = `rotate(0deg)`;
+
+                if (isWin) {
+                    sfx.win();
+                    currentUser.upgradesWon += 1; // 📈 INCREMENT SUCCESSFUL UPGRADES COUNTER
+                    userInventory.push({ ...selectedUpgTargetItem, instanceId: Date.now() });
+                    alert(`УСПЕХ! Вы выиграли ${selectedUpgTargetItem.name}!`);
+                } else {
+                    sfx.fail();
+                    alert('Увы, апгрейд не удался!');
+                }
+
+                // If used input skin, remove it from inventory
+                if (upgraderMode === 'item' && selectedUpgInputItem) {
+                    userInventory = userInventory.filter(i => i.instanceId !== selectedUpgInputItem.instanceId);
+                    selectedUpgInputItem = null;
+                }
+
+                updateUserUIStats();
+                renderInventory();
+                updateUpgraderUI();
+            }, 4000);
+        }
+
+        // Deposit & Modal Functions
+        function openDepositModal() { document.getElementById('depositModal').classList.remove('hidden'); }
+        function closeDepositModal() { document.getElementById('depositModal').classList.add('hidden'); }
+
+        function addTestBalance(amount) {
+            currentUser.balance += amount;
+            updateUserUIStats();
+            closeDepositModal();
+            alert(`Успешно начислено +$${amount.toFixed(2)} на баланс!`);
+        }
+
+        function applyPromo() {
+            const val = document.getElementById('promoInput').value.trim();
+            if (val.toUpperCase() === 'NEON2026') {
+                alert('Промокод принят! +10% к следующему пополнению.');
+            } else {
+                alert('Неверный промокод.');
+            }
+        }
+
+        function openIntegrationModal() { document.getElementById('integrationModal').classList.remove('hidden'); }
+        function closeIntegrationModal() { document.getElementById('integrationModal').classList.add('hidden'); }
+
+        // User Inventory Render
+        function renderInventory() {
+            const grid = document.getElementById('userInventoryGrid');
+            if (userInventory.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500 text-xs">Ваш инвентарь пуст. Открывайте кейсы!</div>';
+                return;
+            }
+            grid.innerHTML = userInventory.map(item => `
+                <div class="bg-[#12121a] border border-[#1f1f2e] p-3 rounded-xl text-center space-y-2 relative group bg-rarity-${item.rarity}">
+                    <span class="text-[9px] font-mono text-neon-green block font-bold">$${item.price.toFixed(2)}</span>
+                    <h5 class="text-xs font-bold text-white truncate">${item.name}</h5>
+                    <button onclick="sellInventoryItem(${item.instanceId})" class="w-full py-1 rounded bg-white/5 hover:bg-neon-green/20 text-gray-300 hover:text-neon-green font-bold text-[10px] transition-all">Продать</button>
+                </div>
+            `).join('');
+        }
+
+        function sellInventoryItem(instanceId) {
+            const item = userInventory.find(i => i.instanceId === instanceId);
+            if (item) {
+                currentUser.balance += item.price;
+                userInventory = userInventory.filter(i => i.instanceId !== instanceId);
+                updateUserUIStats();
+                renderInventory();
+            }
+        }
+
+        function sellAllInventory() {
+            const total = userInventory.reduce((acc, i) => acc + i.price, 0);
+            currentUser.balance += total;
+            userInventory = [];
+            updateUserUIStats();
+            renderInventory();
+            alert(`Все скины проданы за $${total.toFixed(2)}`);
+        }
+
+        // Leaderboard Render
+        function renderLeaderboard() {
+            const leaders = [
+                { rank: 1, name: 'CyberKing_CS', cases: 1420, upgrades: 312, topDrop: 'Karambit | Doppler (Ruby)' },
+                { rank: 2, name: 'NeonSniper', cases: 980, upgrades: 215, topDrop: 'Butterfly Knife | Gamma' },
+                { rank: 3, name: 'ProGamer_777', cases: 850, upgrades: 190, topDrop: 'AK-47 | Fire Serpent' },
+                { rank: 4, name: 'S1mple_Fan', cases: 620, upgrades: 110, topDrop: 'AWP | Asiimov' }
+            ];
+
+            const tbody = document.getElementById('leaderboardBody');
+            tbody.innerHTML = leaders.map(l => `
+                <tr class="hover:bg-white/5 transition-colors">
+                    <td class="py-3.5 px-6 font-mono font-bold ${l.rank === 1 ? 'text-yellow-400' : 'text-gray-400'}">#${l.rank}</td>
+                    <td class="py-3.5 px-6 font-bold text-white flex items-center space-x-2">
+                        <i class="fa-brands fa-steam text-neon-green"></i>
+                        <span>${l.name}</span>
+                    </td>
+                    <td class="py-3.5 px-6 font-mono text-neon-green font-bold">🔑 ${l.cases}</td>
+                    <td class="py-3.5 px-6 font-mono text-neon-magenta font-bold">📈 ${l.upgrades}</td>
+                    <td class="py-3.5 px-6 text-xs text-gray-300">${l.topDrop}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Live Feed Mock Chips
+        function renderLiveFeed() {
+            const feed = document.getElementById('liveFeed');
+            const chips = CS2_SKINS.slice(0, 8).map(skin => `
+                <div class="flex items-center space-x-2 bg-[#12121a] border border-[#1f1f2e] px-2.5 py-1 rounded-lg text-[11px] whitespace-nowrap">
+                    <span class="w-2 h-2 rounded-full" style="background:${skin.color}"></span>
+                    <span class="text-white font-semibold">${skin.name}</span>
+                    <span class="text-neon-green font-mono font-bold">$${skin.price.toFixed(2)}</span>
+                </div>
+            `).join('');
+            feed.innerHTML = chips;
+        }
+
+        function addLiveDropChip(skin) {
+            const feed = document.getElementById('liveFeed');
+            const newChip = document.createElement('div');
+            newChip.className = "flex items-center space-x-2 bg-neon-green/10 border border-neon-green px-2.5 py-1 rounded-lg text-[11px] whitespace-nowrap animate-pulse";
+            newChip.innerHTML = `
+                <span class="w-2 h-2 rounded-full" style="background:${skin.color}"></span>
+                <span class="text-white font-semibold">${skin.name}</span>
+                <span class="text-neon-green font-mono font-bold">$${skin.price.toFixed(2)}</span>
+            `;
+            feed.insertBefore(newChip, feed.firstChild);
+        }
+
+        function scrollToCases() {
+            document.getElementById('casesListSection').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
