@@ -603,10 +603,16 @@
 
         <!-- Player Inventory Grid -->
         <div class="bg-[#0d111a] border border-[#1a2234] rounded-2xl p-6 space-y-4 shadow-xl">
-          <h3 class="text-lg font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-boxes-packing text-[#00ff66]"></i>
-            <span data-lang="profile_inventory_title">Инвентарь игрока</span>
-          </h3>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-boxes-packing text-[#00ff66]"></i>
+              <span data-lang="profile_inventory_title">Инвентарь игрока</span>
+            </h3>
+            <button id="btn-sell-all-inventory" onclick="sellAllInventory()" class="hidden px-4 py-2 rounded-xl bg-[#00ff66]/15 hover:bg-[#00ff66] text-[#00ff66] hover:text-black border border-[#00ff66]/40 text-xs font-extrabold transition-all flex items-center gap-2">
+              <i class="fa-solid fa-coins"></i>
+              <span id="btn-sell-all-label">Продать всё</span>
+            </button>
+          </div>
           <div id="profile-inventory-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 min-h-[120px]">
             <!-- Items injected JS -->
           </div>
@@ -1040,49 +1046,162 @@
 
     // --- 7. SKINS LIBRARY & CASES GENERATION ---
     async function loadSkinsLibrary() {
+      let loaded = [];
       try {
         const res = await fetch('./skins.json', { referrerpolicy: 'no-referrer' });
-        if (res.ok) {
-          rawSkinsLibrary = await res.json();
-        }
+        if (res.ok) loaded = await res.json();
       } catch(e) {}
 
-      if (!rawSkinsLibrary || rawSkinsLibrary.length === 0) {
+      if (!loaded || loaded.length === 0) {
         try {
           const res2 = await fetch('/skins.json', { referrerpolicy: 'no-referrer' });
-          if (res2.ok) rawSkinsLibrary = await res2.json();
+          if (res2.ok) loaded = await res2.json();
         } catch(e) {}
       }
 
-      // Compact Fallback Array if skins.json is unreachable
+      if (Array.isArray(loaded) && loaded.length > 0) {
+        // Deduplicate by name and convert USD prices from skins.json into internal EUR base
+        const seen = new Set();
+        rawSkinsLibrary = loaded
+          .filter(s => s && s.name && Number(s.price) > 0)
+          .map(s => ({
+            ...s,
+            price: parseFloat((Number(s.price) * 0.92).toFixed(2))
+          }))
+          .filter(s => {
+            if (seen.has(s.name)) return false;
+            seen.add(s.name);
+            return true;
+          });
+      }
+
+      // Rich tiered fallback catalog if skins.json is unreachable in preview
       if (!rawSkinsLibrary || rawSkinsLibrary.length === 0) {
+        const fallbackImg = "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZFCb5B7nVRRA408005WZ55O61VWVg5aCWRvD0dOed5WZpTQELEVPn_u2C4P1Z3";
         rawSkinsLibrary = [
-          { name: "AK-47 | Slate", wear: "Field-Tested", price: 3.50, rarity: "restricted", image: "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZFCb5B7nVRRA408005WZ55O61VWVg5aCWRvD0dOed5WZpTQELEVPn_u2C4P1Z3" },
-          { name: "M4A4 | Evil Daimyo", wear: "Factory New", price: 2.80, rarity: "restricted", image: "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZFCb5B7nVRRA408005WZ55O61VWVg5aCWRvD0dOed5WZpTQELEVPn_u2C4P1Z3" },
-          { name: "USP-S | Cyrex", wear: "Field-Tested", price: 1.80, rarity: "restricted", image: "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZFCb5B7nVRRA408005WZ55O61VWVg5aCWRvD0dOed5WZpTQELEVPn_u2C4P1Z3" },
-          { name: "Glock-18 | Water Elemental", wear: "Field-Tested", price: 4.20, rarity: "classified", image: "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZFCb5B7nVRRA408005WZ55O61VWVg5aCWRvD0dOed5WZpTQELEVPn_u2C4P1Z3" },
-          { name: "AWP | Atheris", wear: "Field-Tested", price: 10.50, rarity: "classified", image: "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZFCb5B7nVRRA408005WZ55O61VWVg5aCWRvD0dOed5WZpTQELEVPn_u2C4P1Z3" },
-          { name: "Desert Eagle | Light Rail", wear: "Factory New", price: 2.20, rarity: "restricted", image: "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZFCb5B7nVRRA408005WZ55O61VWVg5aCWRvD0dOed5WZpTQELEVPn_u2C4P1Z3" },
-          { name: "AWP | Corticera", wear: "Minimal Wear", price: 18.50, rarity: "classified", image: "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZFCb5B7nVRRA408005WZ55O61VWVg5aCWRvD0dOed5WZpTQELEVPn_u2C4P1Z3" },
-          { name: "AK-47 | Redline", wear: "Field-Tested", price: 14.00, rarity: "classified", image: "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZFCb5B7nVRRA408005WZ55O61VWVg5aCWRvD0dOed5WZpTQELEVPn_u2C4P1Z3" }
+          { name: "P250 | Sand Dune", wear: "Field-Tested", price: 0.08, rarity: "consumer", image: fallbackImg },
+          { name: "MP9 | Sand Dashed", wear: "Field-Tested", price: 0.12, rarity: "consumer", image: fallbackImg },
+          { name: "Nova | Polar Mesh", wear: "Field-Tested", price: 0.15, rarity: "consumer", image: fallbackImg },
+          { name: "P90 | Sand Spray", wear: "Field-Tested", price: 0.18, rarity: "consumer", image: fallbackImg },
+          { name: "MAG-7 | Metallic DDPAT", wear: "Factory New", price: 0.24, rarity: "industrial", image: fallbackImg },
+          { name: "Glock-18 | Winterized", wear: "Field-Tested", price: 0.28, rarity: "mil-spec", image: fallbackImg },
+          { name: "MP7 | Cirrus", wear: "Field-Tested", price: 0.32, rarity: "mil-spec", image: fallbackImg },
+          { name: "UMP-45 | Arctic Wolf", wear: "Field-Tested", price: 0.40, rarity: "mil-spec", image: fallbackImg },
+          { name: "SG 553 | Aloha", wear: "Minimal Wear", price: 0.48, rarity: "mil-spec", image: fallbackImg },
+          { name: "USP-S | Black Lotus", wear: "Field-Tested", price: 0.65, rarity: "mil-spec", image: fallbackImg },
+          { name: "M4A1-S | Night Terror", wear: "Field-Tested", price: 0.78, rarity: "restricted", image: fallbackImg },
+          { name: "P250 | Valence", wear: "Minimal Wear", price: 0.92, rarity: "mil-spec", image: fallbackImg },
+          { name: "Glock-18 | Oxide Blaze", wear: "Factory New", price: 1.15, rarity: "mil-spec", image: fallbackImg },
+          { name: "AK-47 | Uncharted", wear: "Factory New", price: 1.45, rarity: "mil-spec", image: fallbackImg },
+          { name: "USP-S | Cyrex", wear: "Field-Tested", price: 1.80, rarity: "restricted", image: fallbackImg },
+          { name: "Desert Eagle | Light Rail", wear: "Factory New", price: 2.20, rarity: "restricted", image: fallbackImg },
+          { name: "M4A4 | Magnesium", wear: "Factory New", price: 2.65, rarity: "mil-spec", image: fallbackImg },
+          { name: "AK-47 | Slate", wear: "Field-Tested", price: 3.40, rarity: "restricted", image: fallbackImg },
+          { name: "Glock-18 | Water Elemental", wear: "Field-Tested", price: 4.30, rarity: "classified", image: fallbackImg },
+          { name: "AK-47 | Ice Coaled", wear: "Field-Tested", price: 5.80, rarity: "classified", image: fallbackImg },
+          { name: "M4A1-S | Decimator", wear: "Field-Tested", price: 8.90, rarity: "classified", image: fallbackImg },
+          { name: "M4A4 | Neo-Noir", wear: "Minimal Wear", price: 11.80, rarity: "covert", image: fallbackImg },
+          { name: "AWP | Atheris", wear: "Factory New", price: 13.50, rarity: "restricted", image: fallbackImg },
+          { name: "AWP | Sun in Leo", wear: "Minimal Wear", price: 17.80, rarity: "industrial", image: fallbackImg },
+          { name: "AWP | Corticera", wear: "Minimal Wear", price: 19.90, rarity: "classified", image: fallbackImg }
         ];
       }
     }
 
+    // Helper: pick balanced items across price bands so cases never overflow with expensive skins
+    function pickTieredSkins(pool, tiers) {
+      const chosen = [];
+      const used = new Set();
+
+      for (const tier of tiers) {
+        let candidates = pool.filter(s =>
+          !used.has(s.name) &&
+          s.price >= tier.min &&
+          s.price <= tier.max &&
+          (!tier.filter || tier.filter(s))
+        );
+
+        // Fallback within price range if themed filter had too few matches
+        if (candidates.length < tier.count && tier.filter) {
+          const extra = pool.filter(s => !used.has(s.name) && s.price >= tier.min && s.price <= tier.max && !candidates.includes(s));
+          candidates = [...candidates, ...extra];
+        }
+
+        // Deterministic spread across the tier
+        candidates.sort((a, b) => a.price - b.price);
+        const step = Math.max(1, Math.floor(candidates.length / Math.max(1, tier.count)));
+        let added = 0;
+        for (let i = 0; i < candidates.length && added < tier.count; i += step) {
+          chosen.push(candidates[i]);
+          used.add(candidates[i].name);
+          added++;
+        }
+        // Fill remaining if step skipped tail
+        for (let i = candidates.length - 1; i >= 0 && added < tier.count; i--) {
+          if (!used.has(candidates[i].name)) {
+            chosen.push(candidates[i]);
+            used.add(candidates[i].name);
+            added++;
+          }
+        }
+      }
+
+      return chosen.sort((a, b) => b.price - a.price);
+    }
+
     function buildDynamicCases() {
-      // 1. Дроп Кейс (€0.50) -> 16-20 items <= €6.00
-      const dropPool = rawSkinsLibrary.filter(s => s.price <= 6.00).slice(0, 18);
-      // 2. Неон Кейс (€0.99) -> 16-20 items <= €12.50
-      const neonPool = rawSkinsLibrary.filter(s => s.price <= 12.50).slice(0, 18);
-      // 3. Снежный Кейс (€1.70) -> 16-20 items <= €21.00 (prioritize winter/AWP blue skins, no expensive knives)
-      const snowPool = rawSkinsLibrary.filter(s => s.price <= 21.00 && !s.name.includes("★")).slice(0, 18);
+      const noKnives = rawSkinsLibrary.filter(s => !s.name.includes("★"));
+
+      // 1. Дроп Кейс (€0.50) — STRICT cap €6.00
+      const dropPool = pickTieredSkins(noKnives, [
+        { min: 0.05, max: 0.35, count: 8 },
+        { min: 0.36, max: 0.85, count: 5 },
+        { min: 0.90, max: 2.20, count: 3 },
+        { min: 2.50, max: 6.00, count: 2 }
+      ]);
+
+      // 2. Неон Кейс (€0.99) — STRICT cap €12.50
+      const neonKeywords = /neon|cyber|hyper|fever|chromatic|decimator|neo-noir|acid|emerald|gamma|vapor|ultraviolet|moonrise|nightwish|electric/i;
+      const neonPool = pickTieredSkins(noKnives, [
+        { min: 0.10, max: 0.70, count: 8, filter: s => neonKeywords.test(s.name) },
+        { min: 0.71, max: 1.80, count: 5, filter: s => neonKeywords.test(s.name) },
+        { min: 1.90, max: 5.50, count: 3, filter: s => neonKeywords.test(s.name) },
+        { min: 6.00, max: 12.50, count: 2, filter: s => neonKeywords.test(s.name) }
+      ]);
+
+      // 3. Снежный Кейс (€1.70) — STRICT cap €21.00, top drop is a winter/blue AWP (~€15-€21), NO knives
+      const winterKeywords = /ice|snow|frost|winter|polar|arctic|blue|cobalt|glacial|ocean|cyan|whiteout|printstream|atheris|corticera|sun in leo|bright water|water|alpine|slate/i;
+      const winterAwpFilter = s => /^AWP\s*\|/i.test(s.name) && winterKeywords.test(s.name);
+      const anyAwpFilter = s => /^AWP\s*\|/i.test(s.name);
+
+      let snowTop = noKnives.filter(s => s.price >= 14.00 && s.price <= 21.00 && winterAwpFilter(s));
+      if (snowTop.length === 0) snowTop = noKnives.filter(s => s.price >= 14.00 && s.price <= 21.00 && anyAwpFilter(s));
+
+      const snowBase = pickTieredSkins(noKnives, [
+        { min: 0.20, max: 1.25, count: 8, filter: s => winterKeywords.test(s.name) },
+        { min: 1.30, max: 3.20, count: 5, filter: s => winterKeywords.test(s.name) },
+        { min: 3.50, max: 9.50, count: 3, filter: s => winterKeywords.test(s.name) },
+        { min: 10.00, max: 14.50, count: 1, filter: s => winterKeywords.test(s.name) }
+      ]);
+
+      const snowPool = [...snowBase];
+      if (snowTop.length > 0) {
+        // Pick the closest blue/winter AWP to €20.00 as the single top jackpot item
+        const bestAwp = snowTop.reduce((prev, curr) =>
+          Math.abs(curr.price - 20.00) < Math.abs(prev.price - 20.00) ? curr : prev
+        );
+        if (!snowPool.some(s => s.name === bestAwp.name)) {
+          snowPool.unshift(bestAwp);
+        }
+      }
+      snowPool.sort((a, b) => b.price - a.price);
 
       casesData = [
         {
           id: 'case_drop',
           name: 'Дроп Кейс',
           price: 0.50,
-          desc: 'Отличный старт для быстрого разогрева с популярными бюджетными скинами!',
+          desc: 'Идеальный разогрев перед крупной игрой — быстрый старт и проверенная классика CS2.',
           icon: 'fa-box-open',
           color: '#00ff66',
           items: attachDropChances(dropPool, 0.50)
@@ -1091,7 +1210,7 @@
           id: 'case_neon',
           name: 'Неон Кейс',
           price: 0.99,
-          desc: 'Сбалансированный кейс с яркими скинами Classified качества.',
+          desc: 'Кислотный киберпанк в каждом слоте — яркие неоновые раскраски и дерзкие контрасты.',
           icon: 'fa-bolt',
           color: '#ff00cc',
           items: attachDropChances(neonPool, 0.99)
@@ -1100,7 +1219,7 @@
           id: 'case_snow',
           name: 'Снежный Кейс',
           price: 1.70,
-          desc: 'Зимний кейс с шансом выбить топовые AWP Atheris и Corticera!',
+          desc: 'Холодная арктическая коллекция: ледяные синие оттенки и редкая зимняя AWP на вершине!',
           icon: 'fa-snowflake',
           color: '#00f0ff',
           items: attachDropChances(snowPool, 1.70)
@@ -1108,18 +1227,41 @@
       ];
     }
 
+    // Calibrate weights via binary search so expected value strictly stays around ~68% of case price
     function attachDropChances(itemsList, casePrice) {
       if (!itemsList || itemsList.length === 0) return [];
-      // Calculate inverse weight based on price for ~70% expected value house edge
-      let totalWeight = 0;
-      const weighted = itemsList.map(item => {
-        const weight = 1 / Math.pow(Math.max(item.price, 0.1), 1.3);
-        totalWeight += weight;
-        return { ...item, weight };
-      });
-      return weighted.map(item => ({
+      const sorted = [...itemsList].sort((a, b) => b.price - a.price);
+      const targetEv = casePrice * 0.68;
+
+      const calcWeights = (exp) => {
+        let totalW = 0;
+        const weights = sorted.map(item => {
+          const w = 1 / Math.pow(Math.max(item.price, 0.05), exp);
+          totalW += w;
+          return w;
+        });
+        let ev = 0;
+        for (let i = 0; i < sorted.length; i++) {
+          ev += sorted[i].price * (weights[i] / totalW);
+        }
+        return { weights, totalW, ev };
+      };
+
+      let low = 0.8, high = 8.0, best = calcWeights(2.5);
+      for (let iter = 0; iter < 24; iter++) {
+        const mid = (low + high) / 2;
+        const res = calcWeights(mid);
+        best = res;
+        if (res.ev > targetEv) {
+          low = mid;
+        } else {
+          high = mid;
+        }
+      }
+
+      return sorted.map((item, idx) => ({
         ...item,
-        chance: parseFloat(((item.weight / totalWeight) * 100).toFixed(2))
+        chance: parseFloat(((best.weights[idx] / best.totalW) * 100).toFixed(2))
       }));
     }
 
@@ -1693,43 +1835,400 @@
       document.getElementById('profile-display-steamid').innerText = `SteamID: ${userObj.steam_id}`;
       document.getElementById('profile-stat-cases').innerText = userObj.cases_opened || 0;
       document.getElementById('profile-stat-upgrades').innerText = userObj.upgrades_won || 0;
-      document.getElementById('profile-stat-best').innerText = formatPrice(userObj.best_drop || 0);
+      const bestDropVal = typeof userObj.best_drop === 'object' && userObj.best_drop !== null
+        ? (userObj.best_drop.price || 0)
+        : (userObj.best_drop || 0);
+      document.getElementById('profile-stat-best').innerText = formatPrice(bestDropVal);
+
+      const isOwn = currentUser && String(currentUser.steam_id) === String(userObj.steam_id);
 
       // Render Trade URL settings if own
-      if (currentUser && currentUser.steam_id === userObj.steam_id) {
+      if (isOwn) {
         document.getElementById('setting-trade-url-input').value = currentUser.trade_url || '';
         validateTradeUrlInput(currentUser.trade_url || '');
       }
 
-      // Inventory grid
+      // Inventory grid + Sell / Withdraw / Sell All controls
       const invGrid = document.getElementById('profile-inventory-grid');
+      const sellAllBtn = document.getElementById('btn-sell-all-inventory');
+      const sellAllLabel = document.getElementById('btn-sell-all-label');
       const inv = userObj.inventory || [];
+
+      if (isOwn && inv.length > 0) {
+        const totalInvValue = inv.reduce((sum, item) => sum + Number(item.price || 0), 0);
+        sellAllBtn.classList.remove('hidden');
+        sellAllLabel.innerText = `Продать всё (${formatPrice(totalInvValue)})`;
+      } else {
+        sellAllBtn.classList.add('hidden');
+      }
+
       if (inv.length === 0) {
         invGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-8 text-sm">Инвентарь пуст</div>`;
       } else {
-        invGrid.innerHTML = inv.map(item => `
-          <div class="p-3 rounded-xl border border-[#1a2234] bg-[#07090e] rarity-${item.rarity || 'mil-spec'} text-center space-y-1">
-            <img src="${item.image}" class="h-16 mx-auto object-contain" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/100x100/0d111a/00ff66?text=Skin'">
-            <div class="text-xs font-bold text-white truncate">${escapeHtml(item.name)}</div>
-            <div class="text-[10px] text-[#00ff66] font-extrabold">${formatPrice(item.price)}</div>
+        invGrid.innerHTML = inv.map((item, idx) => `
+          <div class="p-3 rounded-xl border border-[#1a2234] bg-[#07090e] rarity-${item.rarity || 'mil-spec'} text-center flex flex-col justify-between gap-2">
+            <div class="space-y-1">
+              <img src="${item.image}" class="h-16 mx-auto object-contain" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/100x100/0d111a/00ff66?text=Skin'">
+              <div class="text-xs font-bold text-white truncate" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
+              <div class="text-[10px] text-slate-400">${escapeHtml(item.wear || 'Field-Tested')}</div>
+              <div class="text-xs text-[#00ff66] font-extrabold">${formatPrice(item.price)}</div>
+            </div>
+            ${isOwn ? `
+              <div class="grid grid-cols-2 gap-1.5 pt-2 border-t border-slate-800">
+                <button onclick="sellInventoryItem(${idx})" class="py-1.5 px-2 rounded-lg bg-[#00ff66]/15 hover:bg-[#00ff66] text-[#00ff66] hover:text-black text-[11px] font-bold transition-all">
+                  Продать
+                </button>
+                <button onclick="withdrawInventoryItem(${idx})" class="py-1.5 px-2 rounded-lg bg-[#00f0ff]/15 hover:bg-[#00f0ff] text-[#00f0ff] hover:text-black text-[11px] font-bold transition-all">
+                  Вывести
+                </button>
+              </div>
+            ` : ''}
           </div>
         `).join('');
       }
     }
 
-    function validateTradeUrlInput(val) {
-      const badge = document.getElementById('trade-url-status-badge');
+    function sellInventoryItem(idx) {
+      if (!currentUser || !currentUser.inventory || !currentUser.inventory[idx]) return;
+      const [item] = currentUser.inventory.splice(idx, 1);
+      const price = Number(item.price || 0);
+      currentUser.balance = parseFloat(((currentUser.balance || 0) + price).toFixed(2));
+      playAudioTone(660, 'sine', 0.12);
+      renderHeaderAuth();
+      renderProfileData(currentUser);
+      syncUserToSupabase();
+      showToast(`Продано: ${item.name} (+${formatPrice(price)})`, "success");
+    }
+
+    function sellAllInventory() {
+      if (!currentUser || !currentUser.inventory || currentUser.inventory.length === 0) return;
+      const count = currentUser.inventory.length;
+      const total = currentUser.inventory.reduce((sum, item) => sum + Number(item.price || 0), 0);
+      currentUser.inventory = [];
+      currentUser.balance = parseFloat(((currentUser.balance || 0) + total).toFixed(2));
+      playAudioTone(780, 'triangle', 0.2);
+      renderHeaderAuth();
+      renderProfileData(currentUser);
+      syncUserToSupabase();
+      showToast(`Продано предметов (${count} шт.) на ${formatPrice(total)}!`, "success");
+    }
+
+    function withdrawInventoryItem(idx) {
+      if (!currentUser || !currentUser.inventory || !currentUser.inventory[idx]) return;
+      const tradeUrl = (currentUser.trade_url || '').trim();
       const regex = /partner=\d+&token=[\w-]+/;
-      if (!val) {
-        badge.className = 'absolute right-3 top-2.5 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400';
-        badge.innerText = 'Не указана';
-      } else if (regex.test(val)) {
-        badge.className = 'absolute right-3 top-2.5 px-2 py-0.5 rounded text-[10px] font-bold bg-[#00ff66]/20 text-[#00ff66] border border-[#00ff66]/40';
-        badge.innerText = 'Сохранена ✓';
-      } else {
-        badge.className = 'absolute right-3 top-2.5 px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/40';
-        badge.innerText = 'Неверный формат';
+      if (!regex.test(tradeUrl)) {
+        showToast("Сначала укажите корректный Steam Trade URL в настройках профиля!", "error");
+        const input = document.getElementById('setting-trade-url-input');
+        if (input) {
+          input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          input.focus();
+        }
+        return;
       }
+      const [item] = currentUser.inventory.splice(idx, 1);
+      playAudioTone(880, 'sine', 0.2);
+      renderProfileData(currentUser);
+      syncUserToSupabase();
+      showToast(`Заявка на вывод ${item.name} отправлена в Steam!`, "success");
+    }
+    // --- 13. SUPABASE REALTIME (CHAT, DROPS, ONLINE) WITH CANVAS WEBSOCKET GUARD ---
+    let realtimePollingTimer = null;
+
+    function canUseWebSocket() {
+      try {
+        if (typeof WebSocket === 'undefined') return false;
+        // Canvas / sandboxed blob frames block outbound WebSockets
+        if (window.location.protocol === 'blob:' || window.location.hostname.endsWith('usercontent.goog')) {
+          return false;
+        }
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Prevent unhandled promise rejections if a sandbox blocks WebSocket asynchronously
+    window.addEventListener('unhandledrejection', (event) => {
+      const msg = String(event?.reason?.message || event?.reason || '');
+      if (msg.includes('WebSocket not available') || msg.includes('not allowed in Canvas')) {
+        event.preventDefault();
+      }
+    });
+
+    function startLocalOnlineHeartbeat() {
+      const tabId = 'tab_' + Math.random().toString(36).slice(2, 10);
+      const key = 'neondrop_online_tabs';
+      const beat = () => {
+        try {
+          const now = Date.now();
+          const map = JSON.parse(localStorage.getItem(key) || '{}');
+          map[tabId] = now;
+          Object.keys(map).forEach(k => { if (now - map[k] > 15000) delete map[k]; });
+          localStorage.setItem(key, JSON.stringify(map));
+          const el = document.getElementById('online-counter-val');
+          if (el) el.innerText = Math.max(1, Object.keys(map).length);
+        } catch(e) {}
+      };
+      beat();
+      setInterval(beat, 5000);
+    }
+
+    function setupSupabaseRealtime() {
+      // Always load initial data via standard HTTP REST
+      loadChatMessages();
+      loadLiveDrops();
+
+      if (!supabaseClient) {
+        startLocalOnlineHeartbeat();
+        return;
+      }
+
+      if (!canUseWebSocket()) {
+        // Safe HTTP polling fallback in Canvas preview (no WebSocket errors)
+        startLocalOnlineHeartbeat();
+        if (!realtimePollingTimer) {
+          realtimePollingTimer = setInterval(() => {
+            loadChatMessages();
+            loadLiveDrops();
+          }, 8000);
+        }
+        return;
+      }
+
+      try {
+        // A. Real Online Counter via Supabase Presence
+        const onlineChannel = supabaseClient.channel('neondrop-online');
+        onlineChannel
+          .on('presence', { event: 'sync' }, () => {
+            const state = onlineChannel.presenceState();
+            const count = Math.max(1, Object.keys(state).length);
+            document.getElementById('online-counter-val').innerText = count;
+          })
+          .subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+              try {
+                await onlineChannel.track({ online_at: new Date().toISOString() });
+              } catch(e) {}
+            }
+          });
+
+        // B. Working Live Chat Realtime subscription
+        supabaseClient
+          .channel('public:chat_messages')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
+            appendChatMessage(payload.new);
+          })
+          .subscribe();
+
+        // C. Working Live Drops Realtime subscription
+        supabaseClient
+          .channel('public:live_drops')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'live_drops' }, payload => {
+            appendLiveDrop(payload.new);
+          })
+          .subscribe();
+      } catch (err) {
+        console.warn('Realtime fallback to HTTP polling:', err);
+        startLocalOnlineHeartbeat();
+        if (!realtimePollingTimer) {
+          realtimePollingTimer = setInterval(() => {
+            loadChatMessages();
+            loadLiveDrops();
+          }, 8000);
+        }
+      }
+    }
+
+    async function loadChatMessages() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from('chat_messages')
+          .select('*')
+          .order('created_at', { ascending: true })
+          .limit(50);
+        if (error) return;
+        if (data) data.forEach(msg => appendChatMessage(msg));
+      } catch(e) {}
+    }
+
+    function appendChatMessage(msg) {
+      const container = document.getElementById('chat-messages-container');
+      if (!container || document.getElementById(`msg-${msg.id}`)) return; // Deduplicate
+
+      const div = document.createElement('div');
+      div.id = `msg-${msg.id}`;
+      div.className = 'flex items-start gap-2.5 p-2 rounded-xl bg-[#07090e] border border-[#1a2234] hover:border-[#00ff66]/40 transition-colors';
+      div.innerHTML = `
+        <img src="${msg.avatar || 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg'}" onclick="openProfile('${msg.steam_id}')" class="w-7 h-7 rounded-lg cursor-pointer object-cover border border-slate-700">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span onclick="openProfile('${msg.steam_id}')" class="font-bold text-white hover:text-[#00ff66] cursor-pointer truncate max-w-[110px] text-[11px]">${escapeHtml(msg.nickname || 'Player')}</span>
+            <span class="px-1 py-0.2 text-[9px] rounded bg-[#00ff66]/10 text-[#00ff66] font-bold">Ур.${msg.level || 1}</span>
+          </div>
+          <p class="text-slate-300 text-xs break-words pt-0.5">${escapeHtml(msg.text)}</p>
+        </div>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendChatMessage(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      if (!currentUser) {
+        showToast("Войдите через Steam для отправки сообщений!", "error");
+        loginWithSteam();
+        return;
+      }
+
+      // Check deposit gate (€10 total_deposited requirement)
+      if ((currentUser.total_deposited || 0) < 10) {
+        showToast("Пополните счет на €10 для отправки сообщений!", "error");
+        openDepositModal();
+        return;
+      }
+
+      const msgObj = {
+        steam_id: currentUser.steam_id,
+        nickname: currentUser.nickname,
+        avatar: currentUser.avatar,
+        level: currentUser.level || 1,
+        text: text
+      };
+
+      input.value = '';
+
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.from('chat_messages').insert([msgObj]).select().single();
+          if (error) {
+            showToast("Ошибка Supabase: " + error.message, "error");
+          } else if (data) {
+            appendChatMessage(data);
+          }
+        } catch(err) {
+          showToast("Ошибка сети чата", "error");
+        }
+      } else {
+        appendChatMessage({ id: Date.now(), ...msgObj });
+      }
+    }
+
+    function updateChatLockGateStatus() {
+      const gate = document.getElementById('chat-deposit-gate');
+      if (currentUser && (currentUser.total_deposited || 0) >= 10) {
+        gate.classList.add('hidden');
+      } else {
+        gate.classList.remove('hidden');
+      }
+    }
+
+    async function loadLiveDrops() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from('live_drops')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(25);
+        if (error || !data) return;
+        data.reverse().forEach(drop => appendLiveDrop(drop));
+      } catch(e) {}
+    }
+
+    function appendLiveDrop(drop) {
+      const ticker = document.getElementById('live-drops-ticker');
+      if (!ticker) return;
+      const dropId = drop.id ? `drop-${drop.id}` : null;
+      if (dropId && document.getElementById(dropId)) return;
+
+      const skinName = drop.skin_name || drop.item_name || 'CS2 Skin';
+      const skinPrice = Number(drop.skin_price ?? drop.item_price ?? 0);
+      const skinImage = drop.skin_image || drop.item_image || '';
+      const rarity = drop.skin_color || drop.rarity || 'mil-spec';
+
+      const div = document.createElement('div');
+      if (dropId) div.id = dropId;
+      div.onclick = () => openProfile(String(drop.steam_id));
+      div.className = `flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#1a2234] bg-[#0d111a] hover:border-[#00ff66] transition-all cursor-pointer text-xs select-none rarity-${rarity}`;
+      div.innerHTML = `
+        <img src="${skinImage}" class="w-8 h-8 object-contain" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/80x80/0d111a/00ff66?text=Skin'">
+        <div>
+          <div class="font-bold text-white truncate max-w-[100px] text-[11px]">${escapeHtml(skinName)}</div>
+          <div class="text-[10px] text-[#00ff66] font-extrabold">${formatPrice(skinPrice)}</div>
+        </div>
+      `;
+      ticker.prepend(div);
+    }
+
+    async function publishLiveDrop(item, sourceName) {
+      const dropObj = {
+        steam_id: currentUser ? currentUser.steam_id : '76561198000000000',
+        nickname: currentUser ? currentUser.nickname : 'Player',
+        avatar: currentUser ? currentUser.avatar : '',
+        skin_name: item.name,
+        skin_image: item.image,
+        skin_price: item.price,
+        skin_color: item.rarity || 'mil-spec',
+        case_name: sourceName
+      };
+
+      if (supabaseClient) {
+        try {
+          const { data } = await supabaseClient.from('live_drops').insert([dropObj]).select().single();
+          if (data) appendLiveDrop(data);
+        } catch(e) {
+          appendLiveDrop({ id: Date.now(), ...dropObj });
+        }
+      } else {
+        appendLiveDrop({ id: Date.now(), ...dropObj });
+      }
+    }
+    async function renderTopView() {
+      const body = document.getElementById('top-leaderboard-body');
+      body.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400 text-xs">Загрузка рейтинга...</td></tr>`;
+
+      let topPlayers = [];
+      if (supabaseClient) {
+        try {
+          const { data } = await supabaseClient
+            .from('users')
+            .select('steam_id, nickname, avatar, cases_opened, best_drop')
+            .order('cases_opened', { ascending: false })
+            .limit(20);
+          if (data && data.length > 0) topPlayers = data;
+        } catch(e) {}
+      }
+
+      if (topPlayers.length === 0 && currentUser) {
+        topPlayers = [currentUser];
+      }
+
+      if (topPlayers.length === 0) {
+        body.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-500 text-xs">Пока нет игроков в рейтинге</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = topPlayers.map((p, idx) => {
+        const bestVal = typeof p.best_drop === 'object' && p.best_drop !== null ? (p.best_drop.price || 0) : (p.best_drop || 0);
+        return `
+          <tr onclick="openProfile('${String(p.steam_id)}')" class="hover:bg-[#1a2234]/40 transition-colors cursor-pointer">
+            <td class="py-3 px-4 font-black text-[#00ff66]">#${idx + 1}</td>
+            <td class="py-3 px-4 flex items-center gap-2">
+              <img src="${p.avatar || 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg'}" class="w-7 h-7 rounded-lg object-cover">
+              <span class="font-bold text-white hover:text-[#00ff66]">${escapeHtml(p.nickname || 'Player')}</span>
+            </td>
+            <td class="py-3 px-4 font-bold text-slate-300">${p.cases_opened || 0}</td>
+            <td class="py-3 px-4 font-extrabold text-amber-400">${formatPrice(bestVal)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
     }
 
     function saveTradeUrl() {
