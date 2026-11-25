@@ -246,7 +246,7 @@
         <div id="cases-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
       </div>
 
-      <!-- VIEW 2: CASE OPENING ROULETTE -->
+      <!-- VIEW 2: CASE OPENING ROULETTE (MULTI-OPEN x1-x5 + INLINE RESULT BUTTONS) -->
       <div id="view-case-open" class="view-content hidden flex-col gap-6">
         <div class="flex items-center justify-between glass-panel p-4 rounded-2xl">
           <button onclick="switchView('view-cases')" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#171d2b] hover:bg-[#20283b] text-slate-300 text-sm font-semibold transition-colors">
@@ -259,21 +259,44 @@
           </div>
         </div>
 
-        <div class="glass-panel p-6 rounded-3xl border border-[#171d2b] relative overflow-hidden flex flex-col items-center">
-          <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-1 bg-gradient-to-b from-[#00ff88] via-[#00e5ff] to-[#00ff88] z-30 shadow-[0_0_15px_#00ff88]">
-            <div class="absolute -top-1 -left-2 w-5 h-5 bg-[#00ff88] rotate-45 rounded-sm"></div>
-            <div class="absolute -bottom-1 -left-2 w-5 h-5 bg-[#00ff88] rotate-45 rounded-sm"></div>
+        <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-[#171d2b] relative overflow-hidden flex flex-col items-center gap-4">
+          <!-- Roulette Stage (supports 1 to 5 stacked tracks) -->
+          <div id="roulette-stage" class="w-full relative flex flex-col gap-3">
+            <!-- Center Needle spanning all active tracks -->
+            <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-1 bg-gradient-to-b from-[#00ff88] via-[#00e5ff] to-[#00ff88] z-30 shadow-[0_0_15px_#00ff88] pointer-events-none">
+              <div class="absolute -top-1 -left-2 w-5 h-5 bg-[#00ff88] rotate-45 rounded-sm"></div>
+              <div class="absolute -bottom-1 -left-2 w-5 h-5 bg-[#00ff88] rotate-45 rounded-sm"></div>
+            </div>
+            <div id="roulette-tracks-wrapper" class="w-full flex flex-col gap-2.5"></div>
           </div>
 
-          <div id="roulette-container" class="w-full h-48 roulette-container my-4">
-            <div id="roulette-track" class="roulette-track h-full gap-3 py-2"></div>
-          </div>
+          <!-- STATE A: Open Controls (x1..x5 + Open Button) -->
+          <div id="case-controls-open" class="flex flex-col items-center gap-3 mt-2 z-20 w-full">
+            <div class="flex items-center gap-1.5 bg-[#0b0e16] p-1 rounded-xl border border-[#171d2b]">
+              <button onclick="setCaseOpenCount(1)" data-mult="1" class="case-mult-btn px-3.5 py-1.5 rounded-lg text-xs font-title font-bold bg-[#00ff88] text-black transition-all">x1</button>
+              <button onclick="setCaseOpenCount(2)" data-mult="2" class="case-mult-btn px-3.5 py-1.5 rounded-lg text-xs font-title font-bold text-slate-400 hover:text-white transition-all">x2</button>
+              <button onclick="setCaseOpenCount(3)" data-mult="3" class="case-mult-btn px-3.5 py-1.5 rounded-lg text-xs font-title font-bold text-slate-400 hover:text-white transition-all">x3</button>
+              <button onclick="setCaseOpenCount(4)" data-mult="4" class="case-mult-btn px-3.5 py-1.5 rounded-lg text-xs font-title font-bold text-slate-400 hover:text-white transition-all">x4</button>
+              <button onclick="setCaseOpenCount(5)" data-mult="5" class="case-mult-btn px-3.5 py-1.5 rounded-lg text-xs font-title font-bold text-slate-400 hover:text-white transition-all">x5</button>
+            </div>
 
-          <div class="flex flex-col items-center gap-3 mt-4 z-20">
             <button id="btn-open-case" onclick="spinCaseRoulette()" class="px-10 py-4 rounded-2xl bg-gradient-to-r from-[#00ff88] to-[#00e5ff] text-black font-title font-black text-lg tracking-wider uppercase shadow-xl shadow-[#00ff88]/25 hover:scale-105 active:scale-95 transition-all">
               <span data-i18n="open_for">Открыть за</span> <span id="btn-open-price">€0.00</span>
             </button>
             <span class="text-xs text-slate-400" data-i18n="instant_inventory">Мгновенное зачисление предмета в инвентарь</span>
+          </div>
+
+          <!-- STATE B: Inline Result Controls (replaces open menu, no modal) -->
+          <div id="case-controls-result" class="hidden flex-col items-center gap-3 mt-2 z-20 w-full">
+            <div id="case-result-summary" class="text-xs font-bold text-white text-center"></div>
+            <div class="flex flex-wrap items-center justify-center gap-3 w-full max-w-md">
+              <button onclick="keepCaseDrops()" class="flex-1 min-w-[140px] py-3.5 px-5 rounded-2xl bg-[#171d2b] hover:bg-[#20283b] border border-[#263147] text-white font-title font-bold text-sm uppercase tracking-wider transition-all">
+                В инвентарь
+              </button>
+              <button onclick="sellCaseDrops()" class="flex-1 min-w-[140px] py-3.5 px-5 rounded-2xl bg-gradient-to-r from-[#00ff88] to-[#00e5ff] text-black font-title font-black text-sm uppercase tracking-wider shadow-lg shadow-[#00ff88]/25 hover:scale-[1.02] transition-all">
+                Продать за <span id="case-result-sell-price">€0.00</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -296,7 +319,7 @@
               <h2 class="font-title font-black text-2xl text-white uppercase tracking-wide">
                 <span data-i18n="upgrader_title">Апгрейд</span> <span class="text-[#00e5ff]" data-i18n="skins_word">Скинов</span>
               </h2>
-              <p class="text-xs text-slate-400" data-i18n="upgrader_desc">Выбери предметы из инвентаря, добавь баланс и повышай шансы на топовый скин!</p>
+              <p class="text-xs text-slate-400" data-i18n="upgrader_desc">Выбери предметы из инвентаря, добавь баланс для шанса и забирай топовый скин!</p>
             </div>
             <div class="flex items-center gap-3 text-xs">
               <div class="bg-[#0b0e16] px-3 py-2 rounded-xl border border-[#171d2b]">
@@ -345,7 +368,7 @@
               </div>
 
               <div>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Быстрый выбор по процентам</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Быстрый выбор цели по процентам</span>
                 <div class="grid grid-cols-4 gap-2">
                   <button onclick="presetUpgradeChance(15)" class="py-2 rounded-xl bg-[#171d2b] hover:bg-[#00ff88]/15 border border-transparent hover:border-[#00ff88]/40 text-xs font-bold text-[#00ff88] transition-all">15%</button>
                   <button onclick="presetUpgradeChance(25)" class="py-2 rounded-xl bg-[#171d2b] hover:bg-[#00ff88]/15 border border-transparent hover:border-[#00ff88]/40 text-xs font-bold text-[#00ff88] transition-all">25%</button>
@@ -356,7 +379,7 @@
 
               <div class="bg-[#0f131d] p-3 rounded-xl border border-[#171d2b] flex flex-col gap-2">
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-semibold text-slate-400" data-i18n="balance_boost">Буст балансом:</span>
+                  <span class="text-xs font-semibold text-slate-400" data-i18n="balance_boost">Добавить % балансом:</span>
                   <div class="flex items-center gap-1 bg-[#171d2b] px-2.5 py-1 rounded-lg">
                     <span class="text-xs text-slate-400">€</span>
                     <input type="number" id="upgrader-boost-input" value="0.00" min="0" step="0.5" class="w-20 bg-transparent text-xs font-bold text-white outline-none text-right" oninput="syncUpgraderBoostFromInput(this.value)">
@@ -376,7 +399,7 @@
             <div class="flex flex-col gap-3 bg-[#0b0e16] p-4 rounded-2xl border border-[#171d2b]">
               <div class="flex items-center justify-between border-b border-[#171d2b] pb-2">
                 <span class="text-xs font-bold text-slate-200 uppercase" data-i18n="your_items">1. Твои Предметы</span>
-                <span class="text-[11px] text-slate-400">Кликни, чтобы выбрать</span>
+                <span class="text-[11px] text-slate-400">Обязательно выбери скин</span>
               </div>
               <div id="upgrader-inventory-grid" class="h-64 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-2 pr-1 content-start"></div>
             </div>
@@ -527,7 +550,6 @@
             </div>
           </div>
 
-          <!-- Visual Best Drop Card with Image + Source -->
           <div id="profile-best-drop-card" class="bg-[#0b0e16] p-4 rounded-2xl border border-[#171d2b] flex items-center justify-between gap-4">
             <div class="text-xs text-slate-500">Лучший дроп пока не выбит</div>
           </div>
@@ -724,31 +746,7 @@
     </div>
   </div>
 
-  <!-- MODAL 2: WIN MODAL -->
-  <div id="modal-win" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="glass-panel w-full max-w-sm rounded-3xl border border-[#00ff88]/40 p-6 relative flex flex-col items-center text-center gap-4 glow-neon">
-      <span class="px-3 py-1 rounded-full text-xs font-bold bg-[#00ff88]/20 text-[#00ff88] border border-[#00ff88]/40 uppercase tracking-widest animate-bounce">
-        Поздравляем!
-      </span>
-      <img id="win-item-image" src="" alt="Win Skin" class="w-40 h-32 object-contain filter drop-shadow-[0_0_15px_rgba(0,255,136,0.3)]">
-      <div>
-        <h4 id="win-item-name" class="font-title font-black text-lg text-white">AK-47 | Ice Coaled</h4>
-        <span id="win-item-wear" class="text-xs text-slate-400">Factory New</span>
-      </div>
-      <span id="win-item-price" class="font-title font-black text-2xl text-[#00ff88]">€0.00</span>
-
-      <div class="grid grid-cols-2 gap-3 w-full mt-2">
-        <button onclick="closeModal('modal-win')" class="py-3 rounded-xl bg-[#171d2b] hover:bg-[#20283b] text-xs font-bold text-white uppercase">
-          В инвентарь
-        </button>
-        <button id="btn-win-sell-instant" onclick="sellWinItemInstant()" class="py-3 rounded-xl bg-[#00ff88] text-black font-bold text-xs uppercase shadow-lg shadow-[#00ff88]/20">
-          Продать
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 3: AI SUPPORT CHAT -->
+  <!-- MODAL 2: AI SUPPORT CHAT -->
   <div id="modal-ai-support" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
     <div class="glass-panel w-full max-w-md rounded-3xl border border-[#00e5ff]/40 p-6 relative flex flex-col gap-4 h-[500px]">
       <button onclick="closeModal('modal-ai-support')" class="absolute top-5 right-5 text-slate-400 hover:text-white">
@@ -811,8 +809,8 @@
         instant_inventory: "Мгновенное зачисление предмета в инвентарь",
         case_contents: "Содержимое кейса",
         upgrader_title: "Апгрейд", skins_word: "Скинов",
-        upgrader_desc: "Выбери предметы из инвентаря, добавь баланс и повышай шансы на топовый скин!",
-        your_items: "1. Твои Предметы", balance_boost: "Буст балансом:", chance_word: "Шанс",
+        upgrader_desc: "Выбери предметы из инвентаря, добавь баланс для шанса и забирай топовый скин!",
+        your_items: "1. Твои Предметы", balance_boost: "Добавить % балансом:", chance_word: "Шанс",
         target_skin: "2. Целевой Скин", top_title_1: "Топ", top_title_2: "Игроков",
         profile_settings: "Настройки Профиля", save_btn: "Сохранить",
         lang_label: "Язык интерфейса", curr_label: "Валюта", logout_btn: "Выйти из аккаунта",
@@ -832,8 +830,8 @@
         instant_inventory: "Instant item delivery to your inventory",
         case_contents: "Case Contents",
         upgrader_title: "Skin", skins_word: "Upgrader",
-        upgrader_desc: "Select items from your inventory, boost with balance, and upgrade to top skins!",
-        your_items: "1. Your Items", balance_boost: "Balance boost:", chance_word: "Chance",
+        upgrader_desc: "Select items from your inventory, boost chance with balance, and upgrade to top skins!",
+        your_items: "1. Your Items", balance_boost: "Boost % with balance:", chance_word: "Chance",
         target_skin: "2. Target Skin", top_title_1: "Top", top_title_2: "Players",
         profile_settings: "Profile Settings", save_btn: "Save",
         lang_label: "Language", curr_label: "Currency", logout_btn: "Log Out",
@@ -853,8 +851,8 @@
         instant_inventory: "Миттєве зарахування предмета в інвентар",
         case_contents: "Вміст кейса",
         upgrader_title: "Апгрейд", skins_word: "Скінів",
-        upgrader_desc: "Обери предмети з інвентарю, додай баланс та підвищуй шанси на топовий скін!",
-        your_items: "1. Твої Предмети", balance_boost: "Буст балансом:", chance_word: "Шанс",
+        upgrader_desc: "Обери предмети з інвентарю, додай баланс для шансу та забирай топовий скін!",
+        your_items: "1. Твої Предмети", balance_boost: "Додати % балансом:", chance_word: "Шанс",
         target_skin: "2. Цільовий Скін", top_title_1: "Топ", top_title_2: "Гравців",
         profile_settings: "Налаштування Профілю", save_btn: "Зберегти",
         lang_label: "Мова інтерфейсу", curr_label: "Валюта", logout_btn: "Вийти з акаунту",
@@ -874,8 +872,8 @@
         instant_inventory: "Імгненнае залічэнне прадмета ў інвентар",
         case_contents: "Змесціва кейса",
         upgrader_title: "Апгрэйд", skins_word: "Скінаў",
-        upgrader_desc: "Абяры прадметы з інвентара, дадай баланс і павышай шанцы на топавы скін!",
-        your_items: "1. Твае Прадметы", balance_boost: "Буст балансам:", chance_word: "Шанец",
+        upgrader_desc: "Абяры прадметы з інвентара, дадай баланс для шанцу і забірай топавы скін!",
+        your_items: "1. Твае Прадметы", balance_boost: "Дадаць % балансам:", chance_word: "Шанец",
         target_skin: "2. Мэтавы Скін", top_title_1: "Топ", top_title_2: "Гульцоў",
         profile_settings: "Налады Профілю", save_btn: "Захаваць",
         lang_label: "Мова інтэрфейсу", curr_label: "Валюта", logout_btn: "Выйсці з акаўнта",
@@ -896,13 +894,13 @@
     }
 
     // ==========================================
-    // 3. STATE MANAGEMENT & LOCALSTORAGE SANITIZER
+    // 3. STATE MANAGEMENT (NEW USERS START AT €0.00)
     // ==========================================
     const DEFAULT_USER = {
       steam_id: "76561198000000000",
       nickname: "Гость NeonDrop",
       avatar: "https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg",
-      balance: 100.00,
+      balance: 0.00,
       total_deposited: 0.00,
       xp: 0,
       cases_opened: 0,
@@ -927,13 +925,14 @@
     let upgraderVisibleLimit = 30;
     let isUpgrading = false;
     let activeCase = null;
+    let caseOpenCount = 1;
+    let lastWonItems = [];
     let isSpinning = false;
     let spinAudioCtx = null;
     let spinRafId = null;
     let activeProfileSteamId = null;
     let snowAnimationId = null;
     let activeDepositMethod = 'cards';
-    let lastWonItem = null;
 
     function sanitizeUser(raw) {
       if (!raw || typeof raw !== 'object') return JSON.parse(JSON.stringify(DEFAULT_USER));
@@ -942,7 +941,7 @@
         steam_id: String(raw.steam_id || DEFAULT_USER.steam_id),
         nickname: String(raw.nickname || DEFAULT_USER.nickname),
         avatar: String(raw.avatar || DEFAULT_USER.avatar),
-        balance: typeof raw.balance === 'number' && !isNaN(raw.balance) ? raw.balance : DEFAULT_USER.balance,
+        balance: typeof raw.balance === 'number' && !isNaN(raw.balance) ? raw.balance : 0.00,
         total_deposited: typeof raw.total_deposited === 'number' ? raw.total_deposited : 0,
         xp: typeof raw.xp === 'number' ? raw.xp : 0,
         cases_opened: typeof raw.cases_opened === 'number' ? raw.cases_opened : 0,
@@ -992,6 +991,7 @@
         }
       } catch (e) {}
       renderHeaderAuth();
+      updateChatLockState();
     }
 
     // ==========================================
@@ -1199,7 +1199,7 @@
     }
 
     // ==========================================
-    // 8. CASES & ROULETTE + 100% SYNCED TICK SOUND
+    // 8. CASES & MULTI-ROULETTE (x1-x5 + INLINE BUTTONS)
     // ==========================================
     function renderCasesGrid() {
       const grid = document.getElementById('cases-grid');
@@ -1217,17 +1217,79 @@
       `).join('');
     }
 
+    function setCaseOpenCount(n) {
+      if (isSpinning) return;
+      caseOpenCount = n;
+      document.querySelectorAll('.case-mult-btn').forEach(btn => {
+        if (parseInt(btn.getAttribute('data-mult')) === n) {
+          btn.classList.add('bg-[#00ff88]', 'text-black');
+          btn.classList.remove('text-slate-400');
+        } else {
+          btn.classList.remove('bg-[#00ff88]', 'text-black');
+          btn.classList.add('text-slate-400');
+        }
+      });
+      if (activeCase) {
+        document.getElementById('btn-open-price').textContent = formatCurrency(activeCase.price * caseOpenCount);
+        resetRouletteTracks();
+      }
+    }
+
     function openCaseView(caseId) {
       activeCase = CASES.find(c => c.id === caseId);
       if (!activeCase) return;
 
       document.getElementById('active-case-title').textContent = activeCase.name;
       document.getElementById('active-case-price').textContent = formatCurrency(activeCase.price);
-      document.getElementById('btn-open-price').textContent = formatCurrency(activeCase.price);
+      document.getElementById('btn-open-price').textContent = formatCurrency(activeCase.price * caseOpenCount);
 
+      showCaseOpenControls();
       renderCaseOddsList(activeCase);
-      resetRouletteTrack();
+      resetRouletteTracks();
       switchView('view-case-open');
+    }
+
+    function showCaseOpenControls() {
+      document.getElementById('case-controls-open').classList.remove('hidden');
+      document.getElementById('case-controls-open').classList.add('flex');
+      document.getElementById('case-controls-result').classList.add('hidden');
+      document.getElementById('case-controls-result').classList.remove('flex');
+    }
+
+    function showCaseResultControls(wonItems) {
+      const totalSell = wonItems.reduce((sum, item) => sum + item.price, 0);
+      document.getElementById('case-result-sell-price').textContent = formatCurrency(totalSell);
+      document.getElementById('case-result-summary').textContent = wonItems.length === 1
+        ? `Выпало: ${wonItems[0].name} (${formatCurrency(wonItems[0].price)})`
+        : `Выпало предметов: ${wonItems.length} на сумму ${formatCurrency(totalSell)}`;
+
+      document.getElementById('case-controls-open').classList.add('hidden');
+      document.getElementById('case-controls-open').classList.remove('flex');
+      document.getElementById('case-controls-result').classList.remove('hidden');
+      document.getElementById('case-controls-result').classList.add('flex');
+    }
+
+    function keepCaseDrops() {
+      lastWonItems = [];
+      showCaseOpenControls();
+    }
+
+    function sellCaseDrops() {
+      if (lastWonItems.length > 0) {
+        let soldTotal = 0;
+        lastWonItems.forEach(won => {
+          const idx = currentUser.inventory.findIndex(i => i.uid === won.uid);
+          if (idx > -1) {
+            soldTotal += currentUser.inventory[idx].price;
+            currentUser.inventory.splice(idx, 1);
+          }
+        });
+        currentUser.balance = +(currentUser.balance + soldTotal).toFixed(2);
+        saveUser();
+        showToast(`Продано на ${formatCurrency(soldTotal)}`, "success");
+      }
+      lastWonItems = [];
+      showCaseOpenControls();
     }
 
     function renderCaseOddsList(c) {
@@ -1251,12 +1313,15 @@
       }).join('');
     }
 
-    function resetRouletteTrack() {
-      const track = document.getElementById('roulette-track');
-      if (!track) return;
-      track.style.transition = 'none';
-      track.style.transform = 'translateX(0px)';
-      track.innerHTML = '';
+    function resetRouletteTracks() {
+      const wrapper = document.getElementById('roulette-tracks-wrapper');
+      if (!wrapper) return;
+      const trackHeight = caseOpenCount > 2 ? 'h-32' : 'h-44';
+      let html = '';
+      for (let r = 0; r < caseOpenCount; r++) {
+        html += `<div class="roulette-container w-full ${trackHeight} bg-[#0b0e16]/60 rounded-2xl border border-[#171d2b]/70"><div id="roulette-track-${r}" class="roulette-track h-full gap-3 py-1.5 items-center"></div></div>`;
+      }
+      wrapper.innerHTML = html;
     }
 
     function playCrispTick() {
@@ -1320,21 +1385,21 @@
 
     function spinCaseRoulette() {
       if (isSpinning || !activeCase) return;
-      if (currentUser.balance < activeCase.price) {
+      const totalCost = +(activeCase.price * caseOpenCount).toFixed(2);
+      if (currentUser.balance < totalCost) {
         showToast("Недостаточно средств на балансе!", "error");
         openDepositModal();
         return;
       }
 
-      // Warm up AudioContext on direct user click
       try {
         if (!spinAudioCtx) spinAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (spinAudioCtx.state === 'suspended') spinAudioCtx.resume();
       } catch (e) {}
 
-      currentUser.balance = +(currentUser.balance - activeCase.price).toFixed(2);
-      currentUser.cases_opened += 1;
-      currentUser.xp += Math.floor(activeCase.price * 20);
+      currentUser.balance = +(currentUser.balance - totalCost).toFixed(2);
+      currentUser.cases_opened += caseOpenCount;
+      currentUser.xp += Math.floor(totalCost * 20);
       saveUser();
 
       isSpinning = true;
@@ -1343,45 +1408,58 @@
       btn.classList.add('opacity-50');
 
       const caseSkins = getCaseSkins(activeCase);
-      const winner = selectWeightedSkin(caseSkins, activeCase.price);
-      lastWonItem = winner;
-
       const winIndex = 48;
-      const slots = [];
-      for (let i = 0; i < 60; i++) {
-        slots.push(caseSkins[Math.floor(Math.random() * caseSkins.length)]);
-      }
-      slots[winIndex] = winner;
+      const winners = [];
+      const compact = caseOpenCount > 2;
+      const cardClass = compact ? 'w-32 h-28 p-2' : 'w-36 h-40 p-3';
+      const imgClass = compact ? 'w-16 h-11' : 'w-24 h-16';
+      const slotWidth = compact ? 128 : 144;
+      const gap = 12;
+      const stepPx = slotWidth + gap;
 
-      const track = document.getElementById('roulette-track');
-      const container = document.getElementById('roulette-container');
-      track.style.transition = 'none';
-      track.style.transform = 'translateX(0px)';
+      resetRouletteTracks();
 
-      track.innerHTML = slots.map(s => `
-        <div class="w-36 h-40 shrink-0 bg-[#0b0e16] p-3 rounded-2xl border ${getRarityClass(s.rarity)} flex flex-col items-center justify-between text-center relative shadow-lg">
-          <span class="text-[9px] text-slate-400 uppercase font-bold">${s.wear}</span>
-          <img src="${s.image}" onerror="this.src=getSvgFallback('${escapeAttr(s.name)}','${s.rarity}')" class="w-24 h-16 object-contain">
-          <div class="w-full">
-            <span class="text-xs font-bold text-white line-clamp-1 block">${s.name}</span>
-            <span class="text-xs font-bold text-[#00ff88]">${formatCurrency(s.price)}</span>
+      for (let r = 0; r < caseOpenCount; r++) {
+        const winner = selectWeightedSkin(caseSkins, activeCase.price);
+        winners.push(winner);
+
+        const slots = [];
+        for (let i = 0; i < 60; i++) {
+          slots.push(caseSkins[Math.floor(Math.random() * caseSkins.length)]);
+        }
+        slots[winIndex] = winner;
+
+        const track = document.getElementById(`roulette-track-${r}`);
+        track.style.transition = 'none';
+        track.style.transform = 'translateX(0px)';
+        track.innerHTML = slots.map(s => `
+          <div class="${cardClass} shrink-0 bg-[#0b0e16] rounded-2xl border ${getRarityClass(s.rarity)} flex flex-col items-center justify-between text-center relative shadow-lg">
+            ${compact ? '' : `<span class="text-[9px] text-slate-400 uppercase font-bold">${s.wear}</span>`}
+            <img src="${s.image}" onerror="this.src=getSvgFallback('${escapeAttr(s.name)}','${s.rarity}')" class="${imgClass} object-contain">
+            <div class="w-full">
+              <span class="text-[11px] font-bold text-white line-clamp-1 block">${s.name}</span>
+              <span class="text-[11px] font-bold text-[#00ff88]">${formatCurrency(s.price)}</span>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
-      void track.offsetWidth;
+      const firstTrack = document.getElementById('roulette-track-0');
+      const stage = document.getElementById('roulette-stage');
+      void firstTrack.offsetWidth;
+
       setTimeout(() => {
-        const slotWidth = 144;
-        const gap = 12;
-        const stepPx = slotWidth + gap;
-        const containerCenter = container.offsetWidth / 2;
-        const winSlotCenter = winIndex * stepPx + slotWidth / 2;
-        const jitter = Math.floor(Math.random() * 80) - 40;
-        const targetOffset = -(winSlotCenter - containerCenter + jitter);
+        const containerCenter = stage.offsetWidth / 2;
+        for (let r = 0; r < caseOpenCount; r++) {
+          const track = document.getElementById(`roulette-track-${r}`);
+          const winSlotCenter = winIndex * stepPx + slotWidth / 2;
+          const jitter = Math.floor(Math.random() * 70) - 35;
+          const targetOffset = -(winSlotCenter - containerCenter + jitter);
 
-        track.style.transition = 'transform 5.5s cubic-bezier(0.12, 0.85, 0.15, 1)';
-        track.style.transform = `translateX(${targetOffset}px)`;
-        startSyncedTickLoop(track, container, stepPx);
+          track.style.transition = 'transform 5.5s cubic-bezier(0.12, 0.85, 0.15, 1)';
+          track.style.transform = `translateX(${targetOffset}px)`;
+        }
+        startSyncedTickLoop(firstTrack, stage, stepPx);
       }, 40);
 
       setTimeout(() => {
@@ -1390,25 +1468,30 @@
         btn.disabled = false;
         btn.classList.remove('opacity-50');
 
-        const wonEntry = { ...winner, uid: Date.now(), source: activeCase.name };
-        currentUser.inventory.unshift(wonEntry);
-        currentUser.case_history.unshift({
-          case_name: activeCase.name,
-          case_price: activeCase.price,
-          skin_name: winner.name,
-          skin_price: winner.price,
-          rarity: winner.rarity,
-          date: new Date().toLocaleString()
+        lastWonItems = [];
+        const baseUid = Date.now();
+        winners.forEach((winner, idx) => {
+          const wonEntry = { ...winner, uid: baseUid + idx, source: activeCase.name };
+          lastWonItems.push(wonEntry);
+          currentUser.inventory.unshift(wonEntry);
+          currentUser.case_history.unshift({
+            case_name: activeCase.name,
+            case_price: activeCase.price,
+            skin_name: winner.name,
+            skin_price: winner.price,
+            rarity: winner.rarity,
+            date: new Date().toLocaleString()
+          });
+          if (!currentUser.best_drop || winner.price > currentUser.best_drop.price) {
+            currentUser.best_drop = { ...winner, source: activeCase.name };
+          }
+          pushLiveDrop(winner, activeCase.name);
         });
-        if (currentUser.case_history.length > 50) currentUser.case_history.pop();
 
-        if (!currentUser.best_drop || winner.price > currentUser.best_drop.price) {
-          currentUser.best_drop = { ...winner, source: activeCase.name };
-        }
+        if (currentUser.case_history.length > 50) currentUser.case_history.length = 50;
         saveUser();
-        pushLiveDrop(winner, activeCase.name);
         playWinSound();
-        openWinModal(winner);
+        showCaseResultControls(lastWonItems);
       }, 5650);
     }
 
@@ -1444,7 +1527,7 @@
     }
 
     // ==========================================
-    // 9. UPGRADER LOGIC (FAST & LAG-FREE)
+    // 9. UPGRADER LOGIC (SKINS REQUIRED, NO 75% CAP, % PICKS TARGET SKIN)
     // ==========================================
     function initUpgraderView() {
       const slider = document.getElementById('upgrader-boost-slider');
@@ -1564,15 +1647,18 @@
       updateUpgradeArc();
     }
 
+    function computeUpgradeChance(bet, targetPrice) {
+      if (targetPrice <= 0 || bet <= 0) return 0;
+      return Math.min(95, Math.max(0.5, (bet / targetPrice) * 95));
+    }
+
     function updateUpgradeArc() {
-      const userTotal = selectedUpgraderSkins.reduce((a, b) => a + b.price, 0) + upgraderBoostVal;
+      const skinsTotal = selectedUpgraderSkins.reduce((a, b) => a + b.price, 0);
+      const userTotal = skinsTotal + upgraderBoostVal;
       document.getElementById('upgrader-selected-val').textContent = formatCurrency(userTotal);
 
       const targetPrice = selectedUpgraderTarget ? selectedUpgraderTarget.price : 0;
-      let chance = 0;
-      if (targetPrice > 0 && userTotal > 0) {
-        chance = Math.min(75, Math.max(1, (userTotal / targetPrice) * 90));
-      }
+      const chance = skinsTotal > 0 ? computeUpgradeChance(userTotal, targetPrice) : 0;
 
       document.getElementById('upgrade-chance-val').textContent = `${chance.toFixed(2)}%`;
 
@@ -1584,35 +1670,37 @@
     }
 
     function presetUpgradeMult(mult) {
-      const userTotal = selectedUpgraderSkins.reduce((a, b) => a + b.price, 0) + upgraderBoostVal;
-      if (userTotal <= 0) {
-        showToast("Выбери скин или добавь баланс!", "error");
+      if (selectedUpgraderSkins.length === 0) {
+        showToast("Сначала выбери хотя бы 1 скин из инвентаря!", "error");
         return;
       }
+      const userTotal = selectedUpgraderSkins.reduce((a, b) => a + b.price, 0) + upgraderBoostVal;
       const targetP = userTotal * mult;
       const closest = skinsCatalog.slice().sort((a, b) => Math.abs(a.price - targetP) - Math.abs(b.price - targetP))[0];
       if (closest) selectUpgraderTarget(closest.name);
     }
 
     function presetUpgradeChance(pct) {
-      if (!selectedUpgraderTarget) {
-        showToast("Сначала выбери целевой скин!", "error");
+      if (selectedUpgraderSkins.length === 0) {
+        showToast("Сначала выбери хотя бы 1 скин из инвентаря!", "error");
         return;
       }
-      const neededTotal = (pct / 90) * selectedUpgraderTarget.price;
-      const currItems = selectedUpgraderSkins.reduce((a, b) => a + b.price, 0);
-      const neededBoost = Math.max(0, neededTotal - currItems);
-      if (neededBoost > currentUser.balance) {
-        showToast("Не хватает баланса для такого шанса!", "error");
-      }
-      syncUpgraderBoostFromSlider(neededBoost);
+      const userTotal = selectedUpgraderSkins.reduce((a, b) => a + b.price, 0) + upgraderBoostVal;
+      // Pick target skin matching the requested % chance (does NOT touch balance)
+      const desiredTargetPrice = (userTotal * 95) / pct;
+      const closest = skinsCatalog.slice().sort((a, b) => Math.abs(a.price - desiredTargetPrice) - Math.abs(b.price - desiredTargetPrice))[0];
+      if (closest) selectUpgraderTarget(closest.name);
     }
 
     function executeUpgrade() {
       if (isUpgrading) return;
+      if (selectedUpgraderSkins.length === 0) {
+        showToast("Выбери хотя бы 1 скин из инвентаря! Балансом можно только добавить шанс.", "error");
+        return;
+      }
       const userTotal = selectedUpgraderSkins.reduce((a, b) => a + b.price, 0) + upgraderBoostVal;
-      if (!selectedUpgraderTarget || userTotal <= 0) {
-        showToast("Сформируй ставку и выбери цель!", "error");
+      if (!selectedUpgraderTarget) {
+        showToast("Выбери целевой скин!", "error");
         return;
       }
       if (upgraderBoostVal > currentUser.balance) {
@@ -1635,7 +1723,7 @@
         if (idx > -1) currentUser.inventory.splice(idx, 1);
       });
 
-      const chance = Math.min(75, Math.max(1, (betAmount / targetSkin.price) * 90));
+      const chance = computeUpgradeChance(betAmount, targetSkin.price);
       const roll = Math.random() * 100;
       const isWin = roll <= chance;
 
@@ -1670,14 +1758,12 @@
           currentUser.upgrades_won += 1;
           currentUser.xp += Math.floor(targetSkin.price * 5);
           currentUser.inventory.unshift({ ...targetSkin, uid: Date.now(), source: 'Апгрейдер' });
-          lastWonItem = targetSkin;
           if (!currentUser.best_drop || targetSkin.price > currentUser.best_drop.price) {
             currentUser.best_drop = { ...targetSkin, source: 'Апгрейдер' };
           }
           pushLiveDrop(targetSkin, 'Апгрейдер');
           playWinSound();
-          showToast(`Победа! Вы выиграли ${targetSkin.name}`, "success");
-          openWinModal(targetSkin);
+          showToast(`Победа! Вы выиграли ${targetSkin.name} (${formatCurrency(targetSkin.price)})`, "success");
         } else {
           showToast("Апгрейд не удался. Попробуй ещё раз!", "error");
         }
@@ -1874,7 +1960,7 @@
     }
 
     // ==========================================
-    // 11. PROFILES (FIXED OTHER USER + VISUAL BEST DROP)
+    // 11. PROFILES
     // ==========================================
     function renderProfileBestDrop(bestDrop) {
       const card = document.getElementById('profile-best-drop-card');
@@ -1926,7 +2012,6 @@
       if (isOwn) {
         profileData = currentUser;
       } else {
-        // Never fall back to currentUser! Build clean other-user profile first.
         const cached = knownUsersCache[steamId] || {};
         profileData = sanitizeUser({
           steam_id: steamId,
@@ -1948,7 +2033,6 @@
             if (data) {
               profileData = sanitizeUser(data);
             } else {
-              // Fallback: reconstruct recent drops & best drop from live_drops for this steam_id
               const { data: userDrops } = await sbClient
                 .from('live_drops')
                 .select('*')
@@ -2152,7 +2236,7 @@
     }
 
     // ==========================================
-    // 12. LEADERBOARD, LIVE DROPS & CHAT (FIXED ORDER)
+    // 12. LEADERBOARD, LIVE DROPS & CHAT
     // ==========================================
     async function renderLeaderboard(type = 'xp', btnEl = null) {
       if (btnEl) {
@@ -2285,7 +2369,6 @@
 
         if (drops && drops.length > 0) {
           const container = document.getElementById('live-drops-container');
-          // Render directly newest-first (left to right)
           container.innerHTML = drops.map(createLiveDropHtml).join('');
         }
       } catch (e) {}
@@ -2399,7 +2482,7 @@
     }
 
     // ==========================================
-    // 14. STEAM OPENID + AUTO PROFILE SYNC
+    // 14. STEAM OPENID (REAL STEAM ICON + SUPABASE ACCOUNT RESTORE)
     // ==========================================
     function renderHeaderAuth() {
       const container = document.getElementById('header-auth');
@@ -2410,7 +2493,7 @@
       if (!isLoggedIn) {
         container.innerHTML = `
           <button onclick="loginSteam()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00ff88] to-[#00e5ff] text-black font-title font-bold text-xs uppercase tracking-wider shadow-lg shadow-[#00ff88]/20 hover:scale-105 transition-all">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273-.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.253 0-2.265-1.014-2.265-2.265z"/></svg>
             Войти через Steam
           </button>
         `;
@@ -2450,6 +2533,18 @@
       window.location.href = `https://steamcommunity.com/openid/login?${params.toString()}`;
     }
 
+    async function syncUserFromCloud(steamId) {
+      if (!sbClient || !steamId || steamId === DEFAULT_USER.steam_id) return false;
+      try {
+        const { data } = await sbClient.from('users').select('*').eq('steam_id', String(steamId)).maybeSingle();
+        if (data) {
+          currentUser = sanitizeUser(data);
+          return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+
     async function refreshSteamProfile() {
       if (!currentUser || currentUser.steam_id === DEFAULT_USER.steam_id) return;
       try {
@@ -2469,8 +2564,13 @@
         const match = claimedId.match(/\/id\/(\d+)/);
         if (match && match[1]) {
           const steamId = match[1];
-          currentUser.steam_id = steamId;
-          currentUser.nickname = `User_${steamId.slice(-4)}`;
+          // Restore existing account from Supabase first so balance & chat unlock never reset
+          const foundInCloud = await syncUserFromCloud(steamId);
+          if (!foundInCloud) {
+            currentUser = JSON.parse(JSON.stringify(DEFAULT_USER));
+            currentUser.steam_id = steamId;
+            currentUser.nickname = `User_${steamId.slice(-4)}`;
+          }
           await refreshSteamProfile();
           saveUser();
           history.replaceState({}, document.title, window.location.pathname);
@@ -2481,32 +2581,16 @@
 
     function logoutSteam() {
       currentUser = JSON.parse(JSON.stringify(DEFAULT_USER));
-      saveUser();
+      localStorage.removeItem('neondrop_user');
+      renderHeaderAuth();
+      updateChatLockState();
       showToast("Вы вышли из аккаунта", "info");
       switchView('view-cases');
     }
 
     // ==========================================
-    // 15. WIN MODAL, UTILS & AI ASSISTANT
+    // 15. UTILS & AI ASSISTANT
     // ==========================================
-    function openWinModal(item) {
-      document.getElementById('win-item-image').src = item.image;
-      document.getElementById('win-item-name').textContent = item.name;
-      document.getElementById('win-item-wear').textContent = item.wear;
-      document.getElementById('win-item-price').textContent = formatCurrency(item.price);
-      document.getElementById('modal-win').classList.remove('hidden');
-    }
-
-    function sellWinItemInstant() {
-      if (lastWonItem && currentUser.inventory.length > 0) {
-        currentUser.balance = +(currentUser.balance + lastWonItem.price).toFixed(2);
-        currentUser.inventory.shift();
-        saveUser();
-        showToast(`Скин продан за ${formatCurrency(lastWonItem.price)}`, "success");
-      }
-      closeModal('modal-win');
-    }
-
     function closeModal(id) {
       document.getElementById(id).classList.add('hidden');
     }
@@ -2610,7 +2694,10 @@
     window.onload = async function() {
       loadUserFromStorage();
       await checkSteamOpenIdReturn();
-      refreshSteamProfile();
+      if (currentUser.steam_id !== DEFAULT_USER.steam_id) {
+        await syncUserFromCloud(currentUser.steam_id);
+        await refreshSteamProfile();
+      }
       loadSkinsCatalogAsync();
       initOnlinePresence();
 
