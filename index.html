@@ -411,7 +411,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- VIEW 4: SNOW PASS -->
       <div id="view-snowpass" class="view-content hidden flex-col gap-6 relative">
         <canvas id="snow-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-10 rounded-3xl"></canvas>
@@ -439,7 +439,6 @@
             </div>
           </div>
 
-          <!-- Level Progress Bar -->
           <div class="mb-8 bg-[#0b0e16] p-4 rounded-2xl border border-cyan-900/40">
             <div class="flex items-center justify-between text-xs font-bold mb-2">
               <span id="snowpass-level-display" class="text-cyan-300 font-title">Уровень 1</span>
@@ -450,13 +449,11 @@
             </div>
           </div>
 
-          <!-- 5 Daily Quests -->
           <div class="mb-8">
             <h3 class="font-title font-bold text-base text-white mb-3">Ежедневные задания (5 уровней сложности)</h3>
             <div id="snowpass-quests-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           </div>
 
-          <!-- 3-Row 60-Level Rewards Track -->
           <div>
             <div class="flex items-center justify-between mb-3">
               <h3 class="font-title font-bold text-base text-white">Награды уровней (1 — 60)</h3>
@@ -538,7 +535,6 @@
           </div>
         </div>
 
-        <!-- Personal Settings Card -->
         <div id="own-profile-settings" class="glass-panel p-6 rounded-3xl border border-[#171d2b] flex flex-col gap-6">
           <h3 class="font-title font-bold text-lg text-white flex items-center gap-2 border-b border-[#171d2b] pb-3">
             <svg class="w-5 h-5 text-[#00ff88]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -594,7 +590,6 @@
           </div>
         </div>
 
-        <!-- Inventory & History Sub-Tabs -->
         <div class="glass-panel p-6 rounded-3xl border border-[#171d2b] flex flex-col gap-4">
           <div class="flex flex-wrap items-center justify-between border-b border-[#171d2b] pb-3 gap-3">
             <div class="flex items-center gap-2">
@@ -930,6 +925,7 @@
     let selectedUpgraderTarget = null;
     let upgraderBoostVal = 0;
     let upgradeCurrentDeg = 0;
+    let upgraderVisibleLimit = 30;
     let isUpgrading = false;
     let activeCase = null;
     let isSpinning = false;
@@ -1127,7 +1123,7 @@
     }
 
     // ==========================================
-    // 7. CASES & FIXED ROULETTE CENTERING
+    // 7. CASES & ROULETTE
     // ==========================================
     function renderCasesGrid() {
       const grid = document.getElementById('cases-grid');
@@ -1163,12 +1159,12 @@
       const list = document.getElementById('case-items-list');
       if (!list) return;
 
-      list.innerHTML = skins.map(s => {
+      list.innerHTML = skins.slice(0, 30).map(s => {
         const odds = calculateSkinOdds(s, skins);
         return `
           <div class="bg-[#0b0e16] p-3 rounded-2xl border ${getRarityClass(s.rarity)} flex flex-col items-center text-center relative">
             <span class="absolute top-2 right-2 text-[10px] font-mono text-slate-400 font-bold">${odds}%</span>
-            <img src="${s.image}" onerror="this.src=getSvgFallback('${escapeAttr(s.name)}','${s.rarity}')" class="w-20 h-16 object-contain mb-2">
+            <img loading="lazy" src="${s.image}" onerror="this.src=getSvgFallback('${escapeAttr(s.name)}','${s.rarity}')" class="w-20 h-16 object-contain mb-2">
             <span class="text-xs font-bold text-white line-clamp-1 w-full">${s.name}</span>
             <span class="text-[10px] text-slate-400">${s.wear}</span>
             <span class="text-xs font-bold text-[#00ff88] mt-1">${formatCurrency(s.price)}</span>
@@ -1237,14 +1233,13 @@
         </div>
       `).join('');
 
-      // Force reflow then compute exact center offset for slot #48
       void track.offsetWidth;
       setTimeout(() => {
         const slotWidth = 144;
         const gap = 12;
         const containerCenter = container.offsetWidth / 2;
         const winSlotCenter = winIndex * (slotWidth + gap) + slotWidth / 2;
-        const jitter = Math.floor(Math.random() * 80) - 40; // stays safely inside the winning card
+        const jitter = Math.floor(Math.random() * 80) - 40;
         const targetOffset = -(winSlotCenter - containerCenter + jitter);
 
         track.style.transition = 'transform 5.5s cubic-bezier(0.12, 0.85, 0.15, 1)';
@@ -1310,7 +1305,7 @@
     }
 
     // ==========================================
-    // 8. UPGRADER LOGIC (FIXED NEEDLE & BOOST)
+    // 8. UPGRADER LOGIC (FAST & LAG-FREE)
     // ==========================================
     function initUpgraderView() {
       const slider = document.getElementById('upgrader-boost-slider');
@@ -1322,6 +1317,7 @@
           document.getElementById('upgrader-boost-input').value = '0.00';
         }
       }
+      upgraderVisibleLimit = 30;
       renderUpgraderInventory();
       renderUpgraderTargetCatalog();
       updateUpgradeArc();
@@ -1332,7 +1328,7 @@
       if (!grid) return;
 
       if (!currentUser.inventory || currentUser.inventory.length === 0) {
-        grid.innerHTML = `<div class="col-span-2 text-center text-xs text-slate-500 py-6">Инвентарь пуст</div>`;
+        grid.innerHTML = `<div class="col-span-full text-center text-xs text-slate-500 py-10">Инвентарь пуст</div>`;
         return;
       }
 
@@ -1340,7 +1336,7 @@
         const isSelected = selectedUpgraderSkins.some(s => s.uid === item.uid);
         return `
           <div onclick="toggleSelectUpgraderSkin('${item.uid}')" class="p-2 rounded-xl bg-[#171d2b] border ${isSelected ? 'border-[#00ff88] bg-[#00ff88]/10' : 'border-transparent'} cursor-pointer flex flex-col items-center text-center">
-            <img src="${item.image}" onerror="this.src=getSvgFallback('${escapeAttr(item.name)}','${item.rarity}')" class="w-12 h-10 object-contain">
+            <img loading="lazy" src="${item.image}" onerror="this.src=getSvgFallback('${escapeAttr(item.name)}','${item.rarity}')" class="w-14 h-11 object-contain">
             <span class="text-[10px] font-bold text-white line-clamp-1 w-full mt-1">${item.name}</span>
             <span class="text-[10px] text-[#00ff88] font-bold">${formatCurrency(item.price)}</span>
           </div>
@@ -1370,6 +1366,16 @@
       updateUpgradeArc();
     }
 
+    function resetAndRenderUpgraderCatalog() {
+      upgraderVisibleLimit = 30;
+      renderUpgraderTargetCatalog();
+    }
+
+    function loadMoreUpgraderSkins() {
+      upgraderVisibleLimit += 30;
+      renderUpgraderTargetCatalog();
+    }
+
     function renderUpgraderTargetCatalog() {
       const catalog = document.getElementById('upgrader-target-catalog');
       if (!catalog) return;
@@ -1381,11 +1387,21 @@
       if (sort === 'price-desc') skins.sort((a, b) => b.price - a.price);
       if (sort === 'price-asc') skins.sort((a, b) => a.price - b.price);
 
-      catalog.innerHTML = skins.map(s => {
+      const countEl = document.getElementById('upgrade-catalog-count');
+      if (countEl) countEl.textContent = `Найдено: ${skins.length}`;
+
+      const slice = skins.slice(0, upgraderVisibleLimit);
+      const moreBtn = document.getElementById('btn-load-more-skins');
+      if (moreBtn) {
+        if (skins.length > upgraderVisibleLimit) moreBtn.classList.remove('hidden');
+        else moreBtn.classList.add('hidden');
+      }
+
+      catalog.innerHTML = slice.map(s => {
         const isSelected = selectedUpgraderTarget && selectedUpgraderTarget.name === s.name;
         return `
-          <div onclick="selectUpgraderTarget('${escapeAttr(s.name)}')" class="p-2 rounded-xl bg-[#171d2b] border ${isSelected ? 'border-cyan-400 bg-cyan-500/10' : 'border-transparent'} cursor-pointer flex flex-col items-center text-center">
-            <img src="${s.image}" onerror="this.src=getSvgFallback('${escapeAttr(s.name)}','${s.rarity}')" class="w-12 h-10 object-contain">
+          <div data-skin-name="${escapeAttr(s.name)}" onclick="selectUpgraderTarget('${escapeAttr(s.name)}')" class="upg-target-card p-2 rounded-xl bg-[#171d2b] border ${isSelected ? 'border-cyan-400 bg-cyan-500/10' : 'border-transparent'} cursor-pointer flex flex-col items-center text-center">
+            <img loading="lazy" src="${s.image}" onerror="this.src=getSvgFallback('${escapeAttr(s.name)}','${s.rarity}')" class="w-14 h-11 object-contain">
             <span class="text-[10px] font-bold text-white line-clamp-1 w-full mt-1">${s.name}</span>
             <span class="text-[10px] text-cyan-400 font-bold">${formatCurrency(s.price)}</span>
           </div>
@@ -1395,8 +1411,17 @@
 
     function selectUpgraderTarget(name) {
       selectedUpgraderTarget = skinsCatalog.find(s => s.name === name);
-      document.getElementById('upgrader-target-val').textContent = selectedUpgraderTarget ? formatCurrency(selectedUpgraderTarget.price) : 'Выбери скин';
-      renderUpgraderTargetCatalog();
+      document.getElementById('upgrader-target-val').textContent = selectedUpgraderTarget ? formatCurrency(selectedUpgraderTarget.price) : 'Не выбрана';
+
+      document.querySelectorAll('.upg-target-card').forEach(el => {
+        if (el.getAttribute('data-skin-name') === name) {
+          el.classList.add('border-cyan-400', 'bg-cyan-500/10');
+          el.classList.remove('border-transparent');
+        } else {
+          el.classList.remove('border-cyan-400', 'bg-cyan-500/10');
+          el.classList.add('border-transparent');
+        }
+      });
       updateUpgradeArc();
     }
 
@@ -1481,7 +1506,6 @@
         ? Math.floor(Math.random() * Math.max(1, winAngleMax - 4)) + 2
         : Math.floor(winAngleMax + 4 + Math.random() * Math.max(1, 352 - winAngleMax));
 
-      // Smoothly advance angle every spin without snapping back
       const baseSpins = Math.ceil(upgradeCurrentDeg / 360) * 360 + 1800;
       upgradeCurrentDeg = baseSpins + landingAngle;
 
@@ -1527,7 +1551,7 @@
     }
 
     // ==========================================
-    // 9. SNOW PASS (3 ROWS + 5 DAILY QUESTS + ANTI-DUP CLAIM)
+    // 9. SNOW PASS
     // ==========================================
     function startSnowEffect() {
       const canvas = document.getElementById('snow-canvas');
@@ -1582,7 +1606,6 @@
       document.getElementById('snowpass-bar').style.width = `${Math.min(100, (sp.xp / 100) * 100)}%`;
       document.getElementById('nav-snowpass-lvl').textContent = `Ур. ${sp.level}`;
 
-      // Update Pass buttons state
       const btnPlus = document.getElementById('btn-buy-plus');
       const btnPlat = document.getElementById('btn-buy-platinum');
       if (sp.unlocked.includes('plus')) {
@@ -1596,7 +1619,6 @@
         btnPlat.classList.add('opacity-60');
       }
 
-      // 5 Daily Quests of rising difficulty
       const today = getTodayKey();
       const quests = [
         { id: 'q1', title: 'Открыть 1 кейс', xp: 25, current: currentUser.cases_opened, max: 1 },
@@ -1623,7 +1645,6 @@
         `;
       }).join('');
 
-      // 3-Row 60-Level Track (Free / Plus / Platinum)
       const secretLevels = [10, 20, 30, 45, 50, 55, 60];
       const track = document.getElementById('snowpass-rewards-track');
       if (!track) return;
@@ -1712,7 +1733,7 @@
     }
 
     // ==========================================
-    // 10. PROFILES (OWN & OTHER PLAYERS + HISTORY)
+    // 10. PROFILES
     // ==========================================
     async function openProfile(targetSteamId = null) {
       const steamId = targetSteamId || currentUser.steam_id;
@@ -1802,7 +1823,7 @@
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             ${data.inventory.map(item => `
               <div class="bg-[#0b0e16] p-3 rounded-2xl border ${getRarityClass(item.rarity)} flex flex-col items-center text-center">
-                <img src="${item.image}" onerror="this.src=getSvgFallback('${escapeAttr(item.name)}','${item.rarity}')" class="w-20 h-16 object-contain mb-1">
+                <img loading="lazy" src="${item.image}" onerror="this.src=getSvgFallback('${escapeAttr(item.name)}','${item.rarity}')" class="w-20 h-16 object-contain mb-1">
                 <span class="text-xs font-bold text-white line-clamp-1 w-full">${item.name}</span>
                 <span class="text-xs font-bold text-[#00ff88] my-1">${formatCurrency(item.price)}</span>
                 ${isOwn ? `
@@ -2087,7 +2108,7 @@
     }
 
     // ==========================================
-    // 13. STEAM OPENID + PROFILE SYNC
+    // 13. STEAM OPENID + AUTO PROFILE SYNC
     // ==========================================
     function renderHeaderAuth() {
       const container = document.getElementById('header-auth');
@@ -2138,6 +2159,18 @@
       window.location.href = `https://steamcommunity.com/openid/login?${params.toString()}`;
     }
 
+    async function refreshSteamProfile() {
+      if (!currentUser || currentUser.steam_id === DEFAULT_USER.steam_id) return;
+      try {
+        const res = await fetch(`/api/steam-profile?steamid=${currentUser.steam_id}`);
+        if (!res.ok) return;
+        const profile = await res.json();
+        if (profile.nickname) currentUser.nickname = profile.nickname;
+        if (profile.avatar) currentUser.avatar = profile.avatar;
+        saveUser();
+      } catch (e) {}
+    }
+
     async function checkSteamOpenIdReturn() {
       const params = new URLSearchParams(window.location.search);
       const claimedId = params.get('openid.claimed_id');
@@ -2147,17 +2180,7 @@
           const steamId = match[1];
           currentUser.steam_id = steamId;
           currentUser.nickname = `User_${steamId.slice(-4)}`;
-
-          // Try fetching real Steam nickname & avatar from Vercel API route
-          try {
-            const res = await fetch(`/api/steam-profile?steamid=${steamId}`);
-            if (res.ok) {
-              const profile = await res.json();
-              if (profile.nickname) currentUser.nickname = profile.nickname;
-              if (profile.avatar) currentUser.avatar = profile.avatar;
-            }
-          } catch (e) {}
-
+          await refreshSteamProfile();
           saveUser();
           history.replaceState({}, document.title, window.location.pathname);
           showToast("Успешная авторизация через Steam!", "success");
@@ -2293,9 +2316,10 @@
     // ==========================================
     // 15. INITIALIZATION
     // ==========================================
-    window.onload = function() {
+    window.onload = async function() {
       loadUserFromStorage();
-      checkSteamOpenIdReturn();
+      await checkSteamOpenIdReturn();
+      refreshSteamProfile();
       loadSkinsCatalogAsync();
 
       applyLanguage();
