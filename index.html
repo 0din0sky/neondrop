@@ -130,14 +130,14 @@
           </div>
         </div>
 
-        <!-- Live Online Counter -->
+        <!-- Real Live Online Counter (Supabase Presence) -->
         <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0f131d] border border-[#171d2b] text-xs">
           <span class="relative flex h-2.5 w-2.5">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ff88] opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00ff88]"></span>
           </span>
           <span class="text-slate-400" data-i18n="online">Онлайн:</span>
-          <span id="online-counter" class="font-bold text-white font-title">248</span>
+          <span id="online-counter" class="font-bold text-white font-title">1</span>
         </div>
       </div>
 
@@ -371,10 +371,8 @@
             </div>
           </div>
 
-          <!-- BOTTOM: 2 Side-by-Side Windows (Inventory + Target Skin) -->
+          <!-- BOTTOM: 2 Side-by-Side Windows -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-            <!-- Bottom Left: User Inventory -->
             <div class="flex flex-col gap-3 bg-[#0b0e16] p-4 rounded-2xl border border-[#171d2b]">
               <div class="flex items-center justify-between border-b border-[#171d2b] pb-2">
                 <span class="text-xs font-bold text-slate-200 uppercase" data-i18n="your_items">1. Твои Предметы</span>
@@ -383,7 +381,6 @@
               <div id="upgrader-inventory-grid" class="h-64 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-2 pr-1 content-start"></div>
             </div>
 
-            <!-- Bottom Right: Target Skin -->
             <div class="flex flex-col gap-3 bg-[#0b0e16] p-4 rounded-2xl border border-[#171d2b]">
               <div class="flex items-center justify-between border-b border-[#171d2b] pb-2">
                 <span class="text-xs font-bold text-slate-200 uppercase" data-i18n="target_skin">2. Целевой Скин</span>
@@ -403,7 +400,6 @@
                 Показать ещё
               </button>
             </div>
-
           </div>
         </div>
       </div>
@@ -461,7 +457,6 @@
             </div>
             <div id="snowpass-rewards-track" class="flex gap-3 overflow-x-auto pb-4 pt-2"></div>
           </div>
-
         </div>
       </div>
 
@@ -473,11 +468,12 @@
               <h2 class="font-title font-black text-2xl text-white uppercase tracking-wider">
                 <span data-i18n="top_title_1">Топ</span> <span class="text-yellow-400" data-i18n="top_title_2">Игроков</span>
               </h2>
-              <p class="text-xs text-slate-400">Лучшие игроки NeonDrop по рейтингу и открытиям</p>
+              <p class="text-xs text-slate-400">Лучшие игроки NeonDrop по опыту, кейсам и топ-дропам</p>
             </div>
-            <div class="flex items-center gap-2 bg-[#0b0e16] p-1 rounded-xl border border-[#171d2b]">
+            <div class="flex items-center gap-1.5 bg-[#0b0e16] p-1 rounded-xl border border-[#171d2b]">
               <button onclick="renderLeaderboard('xp', this)" class="top-tab active px-3 py-1.5 rounded-lg text-xs font-bold text-[#00ff88] bg-[#171d2b]">По XP</button>
               <button onclick="renderLeaderboard('cases', this)" class="top-tab px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white">По Кейсам</button>
+              <button onclick="renderLeaderboard('drop', this)" class="top-tab px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white">По Дропу</button>
             </div>
           </div>
 
@@ -485,11 +481,11 @@
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-[#171d2b] text-[11px] font-bold text-slate-400 uppercase">
-                  <th class="py-3 px-4">Место</th>
-                  <th class="py-3 px-4">Игрок</th>
-                  <th class="py-3 px-4 text-center">Уровень</th>
-                  <th class="py-3 px-4 text-center">Кейсов</th>
-                  <th class="py-3 px-4 text-right">Лучший Дроп</th>
+                  <th class="py-3 px-3">Место</th>
+                  <th class="py-3 px-3">Игрок</th>
+                  <th class="py-3 px-3 text-center">Уровень / XP</th>
+                  <th class="py-3 px-3 text-center">Кейсов</th>
+                  <th class="py-3 px-3 text-right">Лучший Дроп</th>
                 </tr>
               </thead>
               <tbody id="top-players-tbody" class="divide-y divide-[#171d2b]/60"></tbody>
@@ -500,34 +496,40 @@
 
       <!-- VIEW 6: PLAYER PROFILE -->
       <div id="view-profile" class="view-content hidden flex-col gap-6">
-        <div class="glass-panel p-6 rounded-3xl border border-[#171d2b] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div class="flex items-center gap-5">
-            <img id="profile-avatar" src="https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg" alt="Avatar" class="w-20 h-20 rounded-2xl border-2 border-[#00ff88] shadow-lg shadow-[#00ff88]/20 object-cover">
-            <div>
-              <div class="flex items-center gap-3">
-                <h2 id="profile-nickname" class="font-title font-black text-2xl text-white">Игрок</h2>
-                <span id="profile-level-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#00ff88]/20 text-[#00ff88] border border-[#00ff88]/40">Ур. 1</span>
+        <div class="glass-panel p-6 rounded-3xl border border-[#171d2b] flex flex-col gap-5">
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="flex items-center gap-5">
+              <img id="profile-avatar" src="https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg" alt="Avatar" class="w-20 h-20 rounded-2xl border-2 border-[#00ff88] shadow-lg shadow-[#00ff88]/20 object-cover">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h2 id="profile-nickname" class="font-title font-black text-2xl text-white">Игрок</h2>
+                  <span id="profile-level-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#00ff88]/20 text-[#00ff88] border border-[#00ff88]/40">Ур. 1</span>
+                </div>
+                <p id="profile-steamid" class="text-xs text-slate-400 font-mono mt-1">SteamID: 76561198000000000</p>
+                <div class="flex items-center gap-2 mt-2.5">
+                  <div class="w-40 h-2 bg-[#171d2b] rounded-full overflow-hidden">
+                    <div id="profile-xp-bar" class="h-full bg-[#00ff88] rounded-full" style="width: 0%;"></div>
+                  </div>
+                  <span id="profile-xp-text" class="text-[10px] font-mono text-slate-400">0 XP</span>
+                </div>
               </div>
-              <p id="profile-steamid" class="text-xs text-slate-400 font-mono mt-1">SteamID: 76561198000000000</p>
-              <div class="w-48 h-2 bg-[#171d2b] rounded-full overflow-hidden mt-3">
-                <div id="profile-xp-bar" class="h-full bg-[#00ff88] rounded-full" style="width: 20%;"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 w-full md:w-auto">
+              <div class="bg-[#0b0e16] px-4 py-3 rounded-2xl border border-[#171d2b] text-center">
+                <span id="profile-cases-count" class="font-title font-bold text-lg text-white block">0</span>
+                <span class="text-[10px] text-slate-400 uppercase" data-i18n="nav_cases">Кейсов</span>
+              </div>
+              <div class="bg-[#0b0e16] px-4 py-3 rounded-2xl border border-[#171d2b] text-center">
+                <span id="profile-upgrades-count" class="font-title font-bold text-lg text-cyan-400 block">0</span>
+                <span class="text-[10px] text-slate-400 uppercase">Апгрейдов</span>
               </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-3 w-full md:w-auto">
-            <div class="bg-[#0b0e16] p-3 rounded-2xl border border-[#171d2b] text-center">
-              <span id="profile-cases-count" class="font-title font-bold text-lg text-white block">0</span>
-              <span class="text-[10px] text-slate-400 uppercase" data-i18n="nav_cases">Кейсов</span>
-            </div>
-            <div class="bg-[#0b0e16] p-3 rounded-2xl border border-[#171d2b] text-center">
-              <span id="profile-upgrades-count" class="font-title font-bold text-lg text-cyan-400 block">0</span>
-              <span class="text-[10px] text-slate-400 uppercase">Апгрейдов</span>
-            </div>
-            <div class="bg-[#0b0e16] p-3 rounded-2xl border border-[#171d2b] text-center">
-              <span id="profile-best-drop-val" class="font-title font-bold text-lg text-[#00ff88] block">€0</span>
-              <span class="text-[10px] text-slate-400 uppercase">Топ Дроп</span>
-            </div>
+          <!-- Visual Best Drop Card with Image + Source -->
+          <div id="profile-best-drop-card" class="bg-[#0b0e16] p-4 rounded-2xl border border-[#171d2b] flex items-center justify-between gap-4">
+            <div class="text-xs text-slate-500">Лучший дроп пока не выбит</div>
           </div>
         </div>
 
@@ -917,6 +919,7 @@
 
     let currentUser = null;
     let viewedProfileData = null;
+    let knownUsersCache = {};
     let selectedUpgraderSkins = [];
     let selectedUpgraderTarget = null;
     let upgraderBoostVal = 0;
@@ -925,6 +928,8 @@
     let isUpgrading = false;
     let activeCase = null;
     let isSpinning = false;
+    let spinAudioCtx = null;
+    let spinRafId = null;
     let activeProfileSteamId = null;
     let snowAnimationId = null;
     let activeDepositMethod = 'cards';
@@ -959,6 +964,17 @@
       };
     }
 
+    function cacheUserBasic(u) {
+      if (!u || !u.steam_id) return;
+      const id = String(u.steam_id);
+      knownUsersCache[id] = {
+        ...(knownUsersCache[id] || {}),
+        steam_id: id,
+        nickname: u.nickname || (knownUsersCache[id] && knownUsersCache[id].nickname) || `User_${id.slice(-4)}`,
+        avatar: u.avatar || (knownUsersCache[id] && knownUsersCache[id].avatar) || DEFAULT_USER.avatar
+      };
+    }
+
     function loadUserFromStorage() {
       try {
         const stored = localStorage.getItem('neondrop_user');
@@ -972,14 +988,51 @@
       try {
         localStorage.setItem('neondrop_user', JSON.stringify(currentUser));
         if (sbClient && currentUser.steam_id !== DEFAULT_USER.steam_id) {
-          sbClient.from('users').upsert([currentUser]).then(() => {}).catch(() => {});
+          sbClient.from('users').upsert([currentUser], { onConflict: 'steam_id' }).then(() => {}).catch(() => {});
         }
       } catch (e) {}
       renderHeaderAuth();
     }
 
     // ==========================================
-    // 4. SKINS CATALOG + DISTINCT SVG FALLBACK
+    // 4. REAL LIVE ONLINE COUNTER (SUPABASE PRESENCE)
+    // ==========================================
+    function initOnlinePresence() {
+      const el = document.getElementById('online-counter');
+      if (el) el.textContent = '1';
+      if (!sbClient || !sbClient.channel) return;
+
+      let sid = sessionStorage.getItem('nd_session_id');
+      if (!sid) {
+        sid = 'u_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now().toString(36);
+        sessionStorage.setItem('nd_session_id', sid);
+      }
+
+      const presenceKey = (currentUser && currentUser.steam_id !== DEFAULT_USER.steam_id)
+        ? `steam_${currentUser.steam_id}_${sid.slice(-4)}`
+        : sid;
+
+      try {
+        const channel = sbClient.channel('neondrop-live-online', {
+          config: { presence: { key: presenceKey } }
+        });
+
+        channel
+          .on('presence', { event: 'sync' }, () => {
+            const state = channel.presenceState();
+            const onlineCount = Object.keys(state).length;
+            if (el) el.textContent = String(Math.max(1, onlineCount));
+          })
+          .subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+              await channel.track({ online_at: new Date().toISOString() });
+            }
+          });
+      } catch (e) {}
+    }
+
+    // ==========================================
+    // 5. SKINS CATALOG + DISTINCT SVG FALLBACK
     // ==========================================
     function getSvgFallback(name, rarity = 'milspec') {
       const hex = getRarityHex(rarity);
@@ -1028,7 +1081,7 @@
     }
 
     // ==========================================
-    // 5. 6 OFFICIAL CASES (MAX DROP ~x6 PRICE, MAX 20 ITEMS)
+    // 6. 6 OFFICIAL CASES (MAX DROP ~x6 PRICE, MAX 20 ITEMS)
     // ==========================================
     const CASES = [
       {
@@ -1074,15 +1127,11 @@
         if (!c.allowKnives && s.name.startsWith('★')) return false;
         return s.price >= c.minPrice && s.price <= c.maxPrice;
       });
-
       if (filtered.length < 5) {
         filtered = skinsCatalog.filter(s => (!c.allowKnives ? !s.name.startsWith('★') : true) && s.price <= c.maxPrice);
       }
-
-      // Sort descending by price
       filtered.sort((a, b) => b.price - a.price);
 
-      // Strictly cap at MAX 20 items, evenly sampled so top & bottom prices are preserved
       if (filtered.length > 20) {
         const sampled = [];
         const step = (filtered.length - 1) / 19;
@@ -1091,11 +1140,9 @@
         }
         filtered = sampled;
       }
-
       return filtered;
     }
 
-    // Steep house-profitable weights: rare top drops get 0.00001%–0.6%, cheap drops get 15%–35%
     function getSkinWeight(skin, casePrice) {
       const ratio = Math.max(skin.price, 0.05) / Math.max(casePrice, 0.1);
       return 1 / Math.pow(ratio, 3.2);
@@ -1119,7 +1166,7 @@
     }
 
     // ==========================================
-    // 6. NAVIGATION & VIEW SWITCHING
+    // 7. NAVIGATION & VIEW SWITCHING
     // ==========================================
     function switchView(viewId) {
       document.querySelectorAll('.view-content').forEach(el => {
@@ -1152,7 +1199,7 @@
     }
 
     // ==========================================
-    // 7. CASES & ROULETTE + CS2 TICK SOUND
+    // 8. CASES & ROULETTE + 100% SYNCED TICK SOUND
     // ==========================================
     function renderCasesGrid() {
       const grid = document.getElementById('cases-grid');
@@ -1212,6 +1259,65 @@
       track.innerHTML = '';
     }
 
+    function playCrispTick() {
+      try {
+        if (!spinAudioCtx) spinAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (spinAudioCtx.state === 'suspended') spinAudioCtx.resume();
+        const t = spinAudioCtx.currentTime;
+
+        const osc = spinAudioCtx.createOscillator();
+        const gain = spinAudioCtx.createGain();
+        const filter = spinAudioCtx.createBiquadFilter();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1250, t);
+        osc.frequency.exponentialRampToValueAtTime(190, t + 0.02);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1600, t);
+        filter.Q.setValueAtTime(2.5, t);
+
+        gain.gain.setValueAtTime(0.16, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.025);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(spinAudioCtx.destination);
+
+        osc.start(t);
+        osc.stop(t + 0.028);
+      } catch (e) {}
+    }
+
+    function getTranslateX(el) {
+      const style = window.getComputedStyle(el).transform;
+      if (!style || style === 'none') return 0;
+      const m = style.match(/matrix\(([^)]+)\)/);
+      if (m) {
+        const parts = m[1].split(',');
+        return parseFloat(parts[4]) || 0;
+      }
+      return 0;
+    }
+
+    function startSyncedTickLoop(track, container, stepPx) {
+      if (spinRafId) cancelAnimationFrame(spinRafId);
+      let lastSlot = -1;
+
+      function frame() {
+        if (!isSpinning) return;
+        const currentX = getTranslateX(track);
+        const centerInTrack = -currentX + container.offsetWidth / 2;
+        const slotIdx = Math.floor(centerInTrack / stepPx);
+        if (slotIdx !== lastSlot && slotIdx >= 0) {
+          lastSlot = slotIdx;
+          playCrispTick();
+        }
+        spinRafId = requestAnimationFrame(frame);
+      }
+      spinRafId = requestAnimationFrame(frame);
+    }
+
     function spinCaseRoulette() {
       if (isSpinning || !activeCase) return;
       if (currentUser.balance < activeCase.price) {
@@ -1219,6 +1325,12 @@
         openDepositModal();
         return;
       }
+
+      // Warm up AudioContext on direct user click
+      try {
+        if (!spinAudioCtx) spinAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (spinAudioCtx.state === 'suspended') spinAudioCtx.resume();
+      } catch (e) {}
 
       currentUser.balance = +(currentUser.balance - activeCase.price).toFixed(2);
       currentUser.cases_opened += 1;
@@ -1261,22 +1373,24 @@
       setTimeout(() => {
         const slotWidth = 144;
         const gap = 12;
+        const stepPx = slotWidth + gap;
         const containerCenter = container.offsetWidth / 2;
-        const winSlotCenter = winIndex * (slotWidth + gap) + slotWidth / 2;
+        const winSlotCenter = winIndex * stepPx + slotWidth / 2;
         const jitter = Math.floor(Math.random() * 80) - 40;
         const targetOffset = -(winSlotCenter - containerCenter + jitter);
 
         track.style.transition = 'transform 5.5s cubic-bezier(0.12, 0.85, 0.15, 1)';
         track.style.transform = `translateX(${targetOffset}px)`;
-        playSpinSounds();
-      }, 50);
+        startSyncedTickLoop(track, container, stepPx);
+      }, 40);
 
       setTimeout(() => {
         isSpinning = false;
+        if (spinRafId) cancelAnimationFrame(spinRafId);
         btn.disabled = false;
         btn.classList.remove('opacity-50');
 
-        const wonEntry = { ...winner, uid: Date.now() };
+        const wonEntry = { ...winner, uid: Date.now(), source: activeCase.name };
         currentUser.inventory.unshift(wonEntry);
         currentUser.case_history.unshift({
           case_name: activeCase.name,
@@ -1289,13 +1403,13 @@
         if (currentUser.case_history.length > 50) currentUser.case_history.pop();
 
         if (!currentUser.best_drop || winner.price > currentUser.best_drop.price) {
-          currentUser.best_drop = winner;
+          currentUser.best_drop = { ...winner, source: activeCase.name };
         }
         saveUser();
         pushLiveDrop(winner, activeCase.name);
         playWinSound();
         openWinModal(winner);
-      }, 5700);
+      }, 5650);
     }
 
     function selectWeightedSkin(skins, casePrice) {
@@ -1309,57 +1423,20 @@
       return skins[skins.length - 1];
     }
 
-    // Crisp CS2-style mechanical roulette tick sound with realistic deceleration
-    function playSpinSounds() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const totalTicks = 44;
-        const duration = 5.45;
-
-        for (let i = 0; i < totalTicks; i++) {
-          const progress = i / (totalTicks - 1);
-          // Deceleration curve matching roulette slowdown
-          const t = ctx.currentTime + Math.pow(progress, 2.35) * duration;
-
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          const filter = ctx.createBiquadFilter();
-
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(1200, t);
-          osc.frequency.exponentialRampToValueAtTime(180, t + 0.022);
-
-          filter.type = 'bandpass';
-          filter.frequency.setValueAtTime(1500, t);
-          filter.Q.setValueAtTime(2.5, t);
-
-          gain.gain.setValueAtTime(0.14, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.028);
-
-          osc.connect(filter);
-          filter.connect(gain);
-          gain.connect(ctx.destination);
-
-          osc.start(t);
-          osc.stop(t + 0.03);
-        }
-      } catch (e) {}
-    }
-
     function playWinSound() {
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!spinAudioCtx) spinAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const notes = [523.25, 659.25, 783.99, 1046.5];
         notes.forEach((freq, idx) => {
-          const t = ctx.currentTime + idx * 0.06;
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
+          const t = spinAudioCtx.currentTime + idx * 0.06;
+          const osc = spinAudioCtx.createOscillator();
+          const gain = spinAudioCtx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(freq, t);
           gain.gain.setValueAtTime(0.07, t);
           gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
           osc.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(spinAudioCtx.destination);
           osc.start(t);
           osc.stop(t + 0.36);
         });
@@ -1367,7 +1444,7 @@
     }
 
     // ==========================================
-    // 8. UPGRADER LOGIC (FAST & LAG-FREE)
+    // 9. UPGRADER LOGIC (FAST & LAG-FREE)
     // ==========================================
     function initUpgraderView() {
       const slider = document.getElementById('upgrader-boost-slider');
@@ -1592,11 +1669,12 @@
         if (isWin) {
           currentUser.upgrades_won += 1;
           currentUser.xp += Math.floor(targetSkin.price * 5);
-          currentUser.inventory.unshift({ ...targetSkin, uid: Date.now() });
+          currentUser.inventory.unshift({ ...targetSkin, uid: Date.now(), source: 'Апгрейдер' });
           lastWonItem = targetSkin;
           if (!currentUser.best_drop || targetSkin.price > currentUser.best_drop.price) {
-            currentUser.best_drop = targetSkin;
+            currentUser.best_drop = { ...targetSkin, source: 'Апгрейдер' };
           }
+          pushLiveDrop(targetSkin, 'Апгрейдер');
           playWinSound();
           showToast(`Победа! Вы выиграли ${targetSkin.name}`, "success");
           openWinModal(targetSkin);
@@ -1614,7 +1692,7 @@
     }
 
     // ==========================================
-    // 9. SNOW PASS
+    // 10. SNOW PASS
     // ==========================================
     function startSnowEffect() {
       const canvas = document.getElementById('snow-canvas');
@@ -1796,24 +1874,115 @@
     }
 
     // ==========================================
-    // 10. PROFILES
+    // 11. PROFILES (FIXED OTHER USER + VISUAL BEST DROP)
     // ==========================================
+    function renderProfileBestDrop(bestDrop) {
+      const card = document.getElementById('profile-best-drop-card');
+      if (!card) return;
+
+      if (!bestDrop || !bestDrop.name) {
+        card.className = "bg-[#0b0e16] p-4 rounded-2xl border border-[#171d2b] flex items-center justify-between gap-4";
+        card.innerHTML = `<div class="text-xs text-slate-500">Лучший дроп пока не выбит</div>`;
+        return;
+      }
+
+      const sourceLabel = bestDrop.source || 'Кейс';
+      const isUpgrader = sourceLabel === 'Апгрейдер';
+
+      card.className = `bg-[#0b0e16] p-4 rounded-2xl border ${getRarityClass(bestDrop.rarity)} flex flex-col sm:flex-row items-center justify-between gap-4`;
+      card.innerHTML = `
+        <div class="flex items-center gap-4">
+          <div class="w-24 h-16 rounded-xl bg-[#07090e]/80 border border-[#171d2b] flex items-center justify-center p-1.5 shrink-0">
+            <img src="${bestDrop.image || getSvgFallback(bestDrop.name, bestDrop.rarity)}" onerror="this.src=getSvgFallback('${escapeAttr(bestDrop.name)}','${bestDrop.rarity || 'milspec'}')" class="w-full h-full object-contain">
+          </div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Лучший дроп</span>
+            <h4 class="font-title font-bold text-sm sm:text-base text-white">${escapeHtml(bestDrop.name)}</h4>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${isUpgrader ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-[#00ff88]/15 text-[#00ff88] border border-[#00ff88]/30'}">
+                ${isUpgrader ? '⚡ Апгрейдер' : `📦 ${escapeHtml(sourceLabel)}`}
+              </span>
+              ${bestDrop.wear ? `<span class="text-[10px] text-slate-400">${escapeHtml(bestDrop.wear)}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="font-title font-black text-xl text-[#00ff88]">${formatCurrency(bestDrop.price || 0)}</span>
+        </div>
+      `;
+    }
+
     async function openProfile(targetSteamId = null) {
-      const steamId = targetSteamId || currentUser.steam_id;
+      const steamId = String(targetSteamId || currentUser.steam_id);
       activeProfileSteamId = steamId;
       switchView('view-profile');
 
-      const isOwn = steamId === currentUser.steam_id;
+      const isOwn = steamId === String(currentUser.steam_id);
       document.getElementById('own-profile-settings').style.display = isOwn ? 'flex' : 'none';
       document.getElementById('btn-sell-all').style.display = isOwn ? 'inline-block' : 'none';
 
-      let profileData = currentUser;
-      if (!isOwn && sbClient) {
-        try {
-          const { data } = await sbClient.from('users').select('*').eq('steam_id', steamId).single();
-          if (data) profileData = sanitizeUser(data);
-        } catch (e) {}
+      let profileData;
+
+      if (isOwn) {
+        profileData = currentUser;
+      } else {
+        // Never fall back to currentUser! Build clean other-user profile first.
+        const cached = knownUsersCache[steamId] || {};
+        profileData = sanitizeUser({
+          steam_id: steamId,
+          nickname: cached.nickname || `User_${steamId.slice(-4)}`,
+          avatar: cached.avatar || DEFAULT_USER.avatar,
+          balance: 0,
+          xp: 0,
+          cases_opened: 0,
+          upgrades_won: 0,
+          inventory: [],
+          case_history: [],
+          upgrade_history: [],
+          best_drop: null
+        });
+
+        if (sbClient) {
+          try {
+            const { data } = await sbClient.from('users').select('*').eq('steam_id', steamId).maybeSingle();
+            if (data) {
+              profileData = sanitizeUser(data);
+            } else {
+              // Fallback: reconstruct recent drops & best drop from live_drops for this steam_id
+              const { data: userDrops } = await sbClient
+                .from('live_drops')
+                .select('*')
+                .eq('steam_id', steamId)
+                .order('created_at', { ascending: false })
+                .limit(30);
+
+              if (userDrops && userDrops.length > 0) {
+                profileData.nickname = userDrops[0].nickname || profileData.nickname;
+                profileData.avatar = userDrops[0].avatar || profileData.avatar;
+                profileData.cases_opened = userDrops.filter(d => d.case_name !== 'Апгрейдер').length;
+                profileData.upgrades_won = userDrops.filter(d => d.case_name === 'Апгрейдер').length;
+                profileData.case_history = userDrops.map(d => ({
+                  case_name: d.case_name || 'Кейс',
+                  case_price: 0,
+                  skin_name: d.skin_name,
+                  skin_price: d.skin_price,
+                  date: d.created_at ? new Date(d.created_at).toLocaleString() : ''
+                }));
+                const top = userDrops.reduce((best, cur) => (!best || cur.skin_price > best.skin_price) ? cur : best, null);
+                if (top) {
+                  profileData.best_drop = {
+                    name: top.skin_name,
+                    price: top.skin_price,
+                    image: top.skin_image,
+                    source: top.case_name || 'Кейс'
+                  };
+                }
+              }
+            }
+          } catch (e) {}
+        }
       }
+
       viewedProfileData = profileData;
 
       document.getElementById('profile-avatar').src = profileData.avatar;
@@ -1821,9 +1990,11 @@
       document.getElementById('profile-steamid').textContent = `SteamID: ${profileData.steam_id}`;
       document.getElementById('profile-level-badge').textContent = `Ур. ${Math.floor(profileData.xp / 100) + 1}`;
       document.getElementById('profile-xp-bar').style.width = `${profileData.xp % 100}%`;
+      document.getElementById('profile-xp-text').textContent = `${profileData.xp} XP`;
       document.getElementById('profile-cases-count').textContent = profileData.cases_opened;
       document.getElementById('profile-upgrades-count').textContent = profileData.upgrades_won;
-      document.getElementById('profile-best-drop-val').textContent = profileData.best_drop ? formatCurrency(profileData.best_drop.price) : '€0';
+
+      renderProfileBestDrop(profileData.best_drop);
 
       if (isOwn) {
         document.getElementById('trade-url-input').value = currentUser.trade_url;
@@ -1871,7 +2042,7 @@
 
       const container = document.getElementById('profile-sub-content');
       const data = viewedProfileData || currentUser;
-      const isOwn = data.steam_id === currentUser.steam_id;
+      const isOwn = String(data.steam_id) === String(currentUser.steam_id);
 
       document.getElementById('profile-inv-count').textContent = data.inventory.length;
       const total = data.inventory.reduce((a, b) => a + b.price, 0);
@@ -1909,12 +2080,12 @@
             ${data.case_history.map(h => `
               <div class="bg-[#0b0e16] px-4 py-3 rounded-xl border border-[#171d2b] flex items-center justify-between text-xs">
                 <div>
-                  <span class="font-bold text-white">${h.skin_name}</span>
-                  <span class="text-[10px] text-slate-400 block">${h.case_name} • ${h.date}</span>
+                  <span class="font-bold text-white">${escapeHtml(h.skin_name)}</span>
+                  <span class="text-[10px] text-slate-400 block">${escapeHtml(h.case_name)} • ${h.date}</span>
                 </div>
                 <div class="text-right">
                   <span class="font-bold text-[#00ff88] block">${formatCurrency(h.skin_price)}</span>
-                  <span class="text-[10px] text-slate-500">Кейс: ${formatCurrency(h.case_price)}</span>
+                  ${h.case_price ? `<span class="text-[10px] text-slate-500">Кейс: ${formatCurrency(h.case_price)}</span>` : ''}
                 </div>
               </div>
             `).join('')}
@@ -1930,7 +2101,7 @@
             ${data.upgrade_history.map(h => `
               <div class="bg-[#0b0e16] px-4 py-3 rounded-xl border ${h.win ? 'border-[#00ff88]/30' : 'border-red-500/20'} flex items-center justify-between text-xs">
                 <div>
-                  <span class="font-bold text-white">${h.target_name}</span>
+                  <span class="font-bold text-white">${escapeHtml(h.target_name)}</span>
                   <span class="text-[10px] text-slate-400 block">Ставка: ${formatCurrency(h.bet)} • Шанс: ${h.chance}% • ${h.date}</span>
                 </div>
                 <span class="font-bold ${h.win ? 'text-[#00ff88]' : 'text-red-400'}">
@@ -1981,7 +2152,7 @@
     }
 
     // ==========================================
-    // 11. LEADERBOARD, CHAT & LIVE DROPS
+    // 12. LEADERBOARD, LIVE DROPS & CHAT (FIXED ORDER)
     // ==========================================
     async function renderLeaderboard(type = 'xp', btnEl = null) {
       if (btnEl) {
@@ -1996,31 +2167,66 @@
       const tbody = document.getElementById('top-players-tbody');
       if (!tbody) return;
 
-      let players = [currentUser];
+      let playersMap = {};
+      if (currentUser.steam_id !== DEFAULT_USER.steam_id) {
+        playersMap[currentUser.steam_id] = currentUser;
+      }
+
       if (sbClient) {
         try {
-          const { data } = await sbClient.from('users').select('*').limit(20);
-          if (data && data.length > 0) players = data.map(sanitizeUser);
+          const { data } = await sbClient.from('users').select('*').limit(30);
+          if (data && data.length > 0) {
+            data.forEach(raw => {
+              const p = sanitizeUser(raw);
+              cacheUserBasic(p);
+              playersMap[p.steam_id] = p;
+            });
+          }
         } catch (e) {}
       }
 
-      players.sort((a, b) => type === 'xp' ? b.xp - a.xp : b.cases_opened - a.cases_opened);
+      let players = Object.values(playersMap);
+      if (players.length === 0) players = [currentUser];
 
-      tbody.innerHTML = players.map((p, idx) => `
-        <tr onclick="openProfile('${p.steam_id}')" class="hover:bg-[#171d2b]/40 cursor-pointer transition-colors">
-          <td class="py-3 px-4 font-title font-bold text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-400'}">#${idx + 1}</td>
-          <td class="py-3 px-4 flex items-center gap-2.5">
-            <img src="${p.avatar}" class="w-7 h-7 rounded-lg object-cover">
-            <span class="text-xs font-bold text-white">${p.nickname}</span>
-          </td>
-          <td class="py-3 px-4 text-center font-bold text-xs text-[#00ff88]">Ур. ${Math.floor(p.xp / 100) + 1}</td>
-          <td class="py-3 px-4 text-center text-xs text-slate-300 font-mono">${p.cases_opened}</td>
-          <td class="py-3 px-4 text-right text-xs font-bold text-cyan-400">${p.best_drop ? formatCurrency(p.best_drop.price) : '-'}</td>
-        </tr>
-      `).join('');
+      players.sort((a, b) => {
+        if (type === 'cases') return b.cases_opened - a.cases_opened;
+        if (type === 'drop') return ((b.best_drop && b.best_drop.price) || 0) - ((a.best_drop && a.best_drop.price) || 0);
+        return b.xp - a.xp;
+      });
+
+      tbody.innerHTML = players.map((p, idx) => {
+        const bd = p.best_drop;
+        const bdHtml = bd ? `
+          <div class="flex items-center justify-end gap-2">
+            <div class="text-right">
+              <span class="text-xs font-bold text-[#00ff88] block">${formatCurrency(bd.price || 0)}</span>
+              <span class="text-[9px] text-slate-400 block max-w-[110px] truncate">${escapeHtml(bd.source || 'Кейс')}</span>
+            </div>
+            <img loading="lazy" src="${bd.image || getSvgFallback(bd.name, bd.rarity)}" onerror="this.src=getSvgFallback('${escapeAttr(bd.name)}','${bd.rarity || 'milspec'}')" class="w-10 h-8 object-contain rounded bg-[#07090e] p-0.5 border border-[#171d2b]">
+          </div>
+        ` : `<span class="text-xs text-slate-500">—</span>`;
+
+        return `
+          <tr onclick="openProfile('${escapeAttr(p.steam_id)}')" class="hover:bg-[#171d2b]/40 cursor-pointer transition-colors">
+            <td class="py-3 px-3 font-title font-bold text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-400'}">#${idx + 1}</td>
+            <td class="py-3 px-3">
+              <div class="flex items-center gap-2.5">
+                <img src="${p.avatar}" class="w-8 h-8 rounded-lg object-cover shrink-0">
+                <span class="text-xs font-bold text-white truncate max-w-[130px]">${escapeHtml(p.nickname)}</span>
+              </div>
+            </td>
+            <td class="py-3 px-3 text-center">
+              <span class="font-bold text-xs text-[#00ff88] block">Ур. ${Math.floor(p.xp / 100) + 1}</span>
+              <span class="text-[10px] text-slate-400 font-mono">${p.xp} XP</span>
+            </td>
+            <td class="py-3 px-3 text-center text-xs text-slate-300 font-mono">${p.cases_opened}</td>
+            <td class="py-3 px-3 text-right">${bdHtml}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
-    async function pushLiveDrop(skin, caseName) {
+    async function pushLiveDrop(skin, sourceName) {
       const dropObj = {
         steam_id: currentUser.steam_id,
         nickname: currentUser.nickname,
@@ -2029,62 +2235,85 @@
         skin_image: skin.image,
         skin_price: skin.price,
         skin_color: getRarityHex(skin.rarity),
-        case_name: caseName
+        case_name: sourceName
       };
+
+      cacheUserBasic(dropObj);
+      prependLiveDropToUI(dropObj);
 
       if (sbClient) {
         try { await sbClient.from('live_drops').insert([dropObj]); } catch (e) {}
       }
-      addLiveDropToUI(dropObj);
     }
 
-    function addLiveDropToUI(d) {
+    function createLiveDropHtml(d) {
+      cacheUserBasic(d);
+      const isUpg = d.case_name === 'Апгрейдер';
+      return `
+        <div onclick="openProfile('${escapeAttr(d.steam_id)}')" class="shrink-0 flex items-center gap-2 bg-[#0f131d] px-2.5 py-1 rounded-xl border border-[#171d2b] cursor-pointer hover:border-[#00ff88]/50 transition-all" style="border-bottom: 2px solid ${d.skin_color || '#00ff88'}">
+          <img src="${d.avatar || DEFAULT_USER.avatar}" class="w-5 h-5 rounded-full object-cover">
+          <img src="${d.skin_image || getSvgFallback(d.skin_name)}" onerror="this.src=getSvgFallback('${escapeAttr(d.skin_name)}')" class="w-7 h-5 object-contain">
+          <div class="leading-tight">
+            <span class="text-[10px] font-bold text-white max-w-[95px] truncate block">${escapeHtml(d.skin_name)}</span>
+            <span class="text-[9px] ${isUpg ? 'text-cyan-400' : 'text-slate-400'} block max-w-[95px] truncate">${escapeHtml(d.case_name || 'Кейс')}</span>
+          </div>
+          <span class="text-[10px] font-bold text-[#00ff88] ml-0.5">${formatCurrency(d.skin_price || 0)}</span>
+        </div>
+      `;
+    }
+
+    function prependLiveDropToUI(d) {
       const container = document.getElementById('live-drops-container');
       if (!container) return;
-
-      const el = document.createElement('div');
-      el.className = "shrink-0 flex items-center gap-2 bg-[#0f131d] px-2.5 py-1 rounded-xl border border-[#171d2b] cursor-pointer hover:border-[#00ff88]/40 transition-all";
-      el.onclick = () => openProfile(d.steam_id);
-      el.innerHTML = `
-        <img src="${d.avatar}" class="w-5 h-5 rounded-full">
-        <img src="${d.skin_image}" onerror="this.src=getSvgFallback('${escapeAttr(d.skin_name)}')" class="w-6 h-5 object-contain">
-        <span class="text-[10px] font-bold text-white max-w-[90px] truncate">${d.skin_name}</span>
-        <span class="text-[10px] font-bold text-[#00ff88]">${formatCurrency(d.skin_price)}</span>
-      `;
-
       if (container.children[0] && container.children[0].classList.contains('italic')) {
         container.innerHTML = '';
       }
-      container.insertBefore(el, container.firstChild);
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = createLiveDropHtml(d).trim();
+      container.insertBefore(wrapper.firstChild, container.firstChild);
+      while (container.children.length > 20) container.removeChild(container.lastChild);
     }
 
     async function pollLiveDropsAndChat() {
       if (!sbClient) return;
       try {
-        const { data: drops } = await sbClient.from('live_drops').select('*').order('created_at', { ascending: false }).limit(15);
+        const { data: drops } = await sbClient
+          .from('live_drops')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(20);
+
         if (drops && drops.length > 0) {
           const container = document.getElementById('live-drops-container');
-          container.innerHTML = '';
-          drops.forEach(addLiveDropToUI);
+          // Render directly newest-first (left to right)
+          container.innerHTML = drops.map(createLiveDropHtml).join('');
         }
       } catch (e) {}
 
       try {
-        const { data: msgs } = await sbClient.from('chat_messages').select('*').order('created_at', { ascending: false }).limit(30);
+        const { data: msgs } = await sbClient
+          .from('chat_messages')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(30);
+
         if (msgs) {
           const box = document.getElementById('chat-messages-box');
-          box.innerHTML = msgs.reverse().map(m => `
-            <div class="bg-[#0b0e16] p-2.5 rounded-xl border border-[#171d2b] flex gap-2">
-              <img src="${m.avatar}" onclick="openProfile('${m.steam_id}')" class="w-6 h-6 rounded-lg cursor-pointer">
-              <div class="flex-1">
-                <div class="flex items-center justify-between">
-                  <span onclick="openProfile('${m.steam_id}')" class="font-bold text-slate-200 cursor-pointer hover:text-[#00ff88]">${m.nickname}</span>
-                  <span class="text-[9px] text-slate-500">Ур. ${m.level || 1}</span>
+          box.innerHTML = msgs.reverse().map(m => {
+            cacheUserBasic(m);
+            return `
+              <div class="bg-[#0b0e16] p-2.5 rounded-xl border border-[#171d2b] flex gap-2">
+                <img src="${m.avatar || DEFAULT_USER.avatar}" onclick="openProfile('${escapeAttr(m.steam_id)}')" class="w-6 h-6 rounded-lg cursor-pointer object-cover">
+                <div class="flex-1">
+                  <div class="flex items-center justify-between">
+                    <span onclick="openProfile('${escapeAttr(m.steam_id)}')" class="font-bold text-slate-200 cursor-pointer hover:text-[#00ff88]">${escapeHtml(m.nickname)}</span>
+                    <span class="text-[9px] text-slate-500">Ур. ${m.level || 1}</span>
+                  </div>
+                  <p class="text-slate-300 mt-0.5">${escapeHtml(m.text)}</p>
                 </div>
-                <p class="text-slate-300 mt-0.5">${escapeHtml(m.text)}</p>
               </div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
           box.scrollTop = box.scrollHeight;
         }
       } catch (e) {}
@@ -2109,14 +2338,13 @@
       };
 
       if (sbClient) {
-        sbClient.from('chat_messages').insert([msg]).then(() => {}).catch(() => {});
+        sbClient.from('chat_messages').insert([msg]).then(() => pollLiveDropsAndChat()).catch(() => {});
       }
       input.value = '';
-      pollLiveDropsAndChat();
     }
 
     // ==========================================
-    // 12. DEPOSIT MODAL (WITH PROMO NEON10)
+    // 13. DEPOSIT MODAL (WITH PROMO NEON10)
     // ==========================================
     function openDepositModal() {
       document.getElementById('modal-deposit').classList.remove('hidden');
@@ -2171,7 +2399,7 @@
     }
 
     // ==========================================
-    // 13. STEAM OPENID + AUTO PROFILE SYNC
+    // 14. STEAM OPENID + AUTO PROFILE SYNC
     // ==========================================
     function renderHeaderAuth() {
       const container = document.getElementById('header-auth');
@@ -2199,7 +2427,7 @@
 
           <div onclick="openProfile()" class="flex items-center gap-2 cursor-pointer glass-panel px-3 py-1.5 rounded-2xl border border-[#171d2b] hover:border-[#00ff88]/40 transition-colors">
             <img src="${currentUser.avatar}" class="w-7 h-7 rounded-lg object-cover">
-            <span class="text-xs font-bold text-white max-w-[100px] truncate">${currentUser.nickname}</span>
+            <span class="text-xs font-bold text-white max-w-[100px] truncate">${escapeHtml(currentUser.nickname)}</span>
           </div>
 
           <button onclick="logoutSteam()" class="p-2 rounded-xl bg-[#171d2b] text-slate-400 hover:text-red-400 transition-colors" title="Выйти">
@@ -2259,7 +2487,7 @@
     }
 
     // ==========================================
-    // 14. WIN MODAL, UTILS & AI ASSISTANT
+    // 15. WIN MODAL, UTILS & AI ASSISTANT
     // ==========================================
     function openWinModal(item) {
       document.getElementById('win-item-image').src = item.image;
@@ -2319,11 +2547,11 @@
     }
 
     function escapeHtml(str) {
-      return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
     function escapeAttr(str) {
-      return (str || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+      return String(str || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
     }
 
     function openAiSupportModal() {
@@ -2377,13 +2605,14 @@
     }
 
     // ==========================================
-    // 15. INITIALIZATION
+    // 16. INITIALIZATION
     // ==========================================
     window.onload = async function() {
       loadUserFromStorage();
       await checkSteamOpenIdReturn();
       refreshSteamProfile();
       loadSkinsCatalogAsync();
+      initOnlinePresence();
 
       applyLanguage();
       renderHeaderAuth();
